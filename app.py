@@ -2,27 +2,23 @@ import streamlit as st
 
 st.set_page_config(page_title="마진율 계산기", layout="centered")
 
-# --- 모바일 맞춤형 여백 축소 CSS 주입 ---
+# 모바일 맞춤형 여백 축소 CSS
 st.markdown("""
     <style>
-    /* 전체 화면 상하좌우 여백 줄이기 */
     .block-container {
         padding-top: 1.5rem !important;
         padding-bottom: 1rem !important;
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }
-    /* 각 입력창과 글자 사이의 붕 뜬 간격 좁히기 */
     div[data-testid="stVerticalBlock"] > div {
         padding-bottom: 0.3rem !important;
         margin-bottom: 0.3rem !important;
     }
-    /* 구분선(hr) 위아래 간격 최소화 */
     hr {
         margin-top: 0.6rem !important;
         margin-bottom: 0.6rem !important;
     }
-    /* 대제목, 소제목 위아래 여백 제거 */
     h1, h2, h3, h4 {
         margin-top: 0.2rem !important;
         margin-bottom: 0.4rem !important;
@@ -32,13 +28,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 1. 제목 설정
 st.title("📊 마진율 계산기")
 
-# --- UI 레이아웃 선언: 결과 박스를 상단에 미리 예약 ---
+# 상단 결과창 공간 예약
 result_container = st.container()
 
-# 2. 수수료 및 입력 데이터베이스
+# 1. 수수료 및 마켓 설정
+st.subheader("🛒 수수료 및 마켓 설정")
 platform_db = {
     "스마트스토어": {"cat": 3.63, "link": 3.0, "ship": 3.63},
     "쿠팡": {"cat": 11.88, "link": 0.0, "ship": 3.3},
@@ -48,8 +44,6 @@ platform_db = {
     "기타 마켓": {"cat": 11.0, "link": 2.0, "ship": 3.3}
 }
 
-st.markdown("---")
-st.subheader("🛒 수수료 및 마켓 설정")
 selected_platform = st.selectbox("쇼핑몰 선택", list(platform_db.keys()))
 defaults = platform_db[selected_platform]
 
@@ -63,7 +57,12 @@ with col_fee3:
 
 vat_rate = st.number_input("부가세율 (%)", value=10, step=1)
 
-# 매출/매입 입력
+# 2. 목표 마진율 역산 입력 (1번 추가 기능)
+st.markdown("---")
+st.subheader("🎯 목표 마진 판매가 역산")
+target_margin_rate = st.number_input("목표 마진율 입력 (%, 원가대비 ROI 기준)", min_value=0.0, max_value=500.0, value=30.0, step=5.0)
+
+# 3. 매출/매입 금액 입력 섹션
 st.markdown("---")
 col_in1, col_in2 = st.columns(2)
 with col_in1:
@@ -85,19 +84,39 @@ platform_fee = (sell_price * (cat_rate + link_rate) / 100) + (customer_shipping 
 settlement_amount = total_sales - platform_fee
 total_cost = buy_price + buy_shipping + other_cost + seller_shipping + ad_cost
 
+# 현재 상태의 순수익 계산
 pre_vat_margin = settlement_amount - total_cost
 estimated_vat = (pre_vat_margin / (1 + vat_rate/100) * (vat_rate/100)) if pre_vat_margin > 0 else 0
 net_profit = pre_vat_margin - estimated_vat
-
-# 마진율: 순수익 / 매입비용 * 100
 margin_rate = (net_profit / total_cost * 100) if total_cost > 0 else 0
 
-# --- 상단 예약된 컨테이너에 결과 뿌리기 ---
+# 목표 판매가 역산 로직 실행
+if total_cost > 0:
+    target_net_profit = total_cost * (target_margin_rate / 100)
+    target_pre_vat_margin = target_net_profit * (1 + vat_rate / 100)
+    target_settlement = target_pre_vat_margin + total_cost
+    
+    # 수수료율을 제한 분모 계산
+    fee_denominator = 1 - ((cat_rate + link_rate) / 100)
+    if fee_denominator > 0:
+        recommended_price = (target_settlement - customer_shipping * (1 - ship_rate / 100)) / fee_denominator
+        recommended_price = max(0, recommended_price)
+    else:
+        recommended_price = 0
+else:
+    recommended_price = 0
+
+# --- 상단 레이아웃에 실시간 결과 출력 ---
 with result_container:
     st.markdown("### 🏆 실시간 계산 결과")
     r_col1, r_col2 = st.columns(2)
     r_col1.metric("💰 최종 순수익", f"{int(net_profit):,} 원")
     r_col2.metric("📈 마진율 (ROI)", f"{margin_rate:.2f} %")
+    
+    # 역산 결과 제안문구 추가
+    if recommended_price > 0:
+        st.info(f"💡 목표 마진 {target_margin_rate}%를 얻기 위한 **추천 판매가: {int(recommended_price):,} 원**")
+    st.markdown("---")
 
 # 상세 내역은 맨 아래 유지
 st.markdown("---")
