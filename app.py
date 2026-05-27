@@ -2,6 +2,36 @@ import streamlit as st
 
 st.set_page_config(page_title="마진율 계산기", layout="centered")
 
+# --- 모바일 맞춤형 여백 축소 CSS 주입 ---
+st.markdown("""
+    <style>
+    /* 전체 화면 상하좌우 여백 줄이기 */
+    .block-container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    /* 각 입력창과 글자 사이의 붕 뜬 간격 좁히기 */
+    div[data-testid="stVerticalBlock"] > div {
+        padding-bottom: 0.3rem !important;
+        margin-bottom: 0.3rem !important;
+    }
+    /* 구분선(hr) 위아래 간격 최소화 */
+    hr {
+        margin-top: 0.6rem !important;
+        margin-bottom: 0.6rem !important;
+    }
+    /* 대제목, 소제목 위아래 여백 제거 */
+    h1, h2, h3, h4 {
+        margin-top: 0.2rem !important;
+        margin-bottom: 0.4rem !important;
+        padding-top: 0rem !important;
+        padding-bottom: 0rem !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # 1. 제목 설정
 st.title("📊 마진율 계산기")
 
@@ -68,9 +98,9 @@ with result_container:
     r_col1, r_col2 = st.columns(2)
     r_col1.metric("💰 최종 순수익", f"{int(net_profit):,} 원")
     r_col2.metric("📈 마진율 (ROI)", f"{margin_rate:.2f} %")
-    st.markdown("---")
 
 # 상세 내역은 맨 아래 유지
+st.markdown("---")
 with st.expander("🔍 상세 정산 데이터 확인"):
     st.write(f"• 정산금액 (공제 후): {int(settlement_amount):,} 원")
     st.write(f"• 총 매입비용: {int(total_cost):,} 원")
