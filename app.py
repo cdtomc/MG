@@ -2,7 +2,7 @@ import streamlit as st
 
 st.set_page_config(page_title="마진율 계산기", layout="centered")
 
-# 모바일 화면 밀착 여백 CSS
+# 모바일 화면 최적화 초밀착 여백 CSS
 st.markdown("""
     <style>
     .block-container {
@@ -35,11 +35,12 @@ if 'last_trigger' not in st.session_state: st.session_state.last_trigger = 'pric
 if 'ui_customer_shipping' not in st.session_state: st.session_state.ui_customer_shipping = "0"
 if 'ui_buy_price' not in st.session_state: st.session_state.ui_buy_price = "0"
 if 'ui_buy_shipping' not in st.session_state: st.session_state.ui_buy_shipping = "3,000"
-if 'ui_other_cost' not in st.session_state: st.session_state.ui_other_cost = "300"
+if 'ui_other_cost' not in st.session_state: st.session_state.ui_other_cost = "500"  # 기본값 300원에서 500원으로 변경
 if 'ui_seller_shipping' not in st.session_state: st.session_state.ui_seller_shipping = "0"
 if 'ui_ad_cost' not in st.session_state: st.session_state.ui_ad_cost = "0"
+if 'prev_mode' not in st.session_state: st.session_state.prev_mode = "📦 사입 구조"
 
-# [콜백] 사용자가 판매가격을 직접 입력했을 때
+# [콜백 함수들] 입력값 변경 시 세 세자리 콤마 포맷팅 강제 적용
 def handle_price_change():
     raw = st.session_state.ui_sell_price.replace(",", "")
     try: val = int(raw)
@@ -47,7 +48,6 @@ def handle_price_change():
     st.session_state.ui_sell_price = f"{val:,}"
     st.session_state.last_trigger = 'price'
 
-# [콜백] 사용자가 최종 순수익을 직접 입력했을 때
 def handle_profit_change():
     raw = st.session_state.ui_net_profit.replace(",", "")
     try: val = int(raw)
@@ -55,11 +55,9 @@ def handle_profit_change():
     st.session_state.ui_net_profit = f"{val:,}"
     st.session_state.last_trigger = 'profit'
 
-# [콜백] 사용자가 마진율을 직접 입력했을 때
 def handle_margin_change():
     st.session_state.last_trigger = 'margin'
 
-# [콜백] 일반 원가 입력창 세 자리 콤마 자동 생성용
 def format_generic(key):
     raw = st.session_state[key].replace(",", "")
     try: val = int(raw)
@@ -91,8 +89,25 @@ with col_fee3: ship_rate = st.number_input("배송비 (%)", value=defaults["ship
 
 vat_rate = st.number_input("부가세율 (%)", value=10, step=1)
 
-# 3. 하단 금액 입력 섹션 (안전한 정수 콤마 콜백 연결)
+# 3. 사입 / 위탁 탭 (모바일 최적화 가로형 라디오 버튼)
 st.markdown("---")
+mode = st.radio("📋 운영 형태 선택 (탭)", ["📦 사입 구조", "🚚 위탁 구조"], horizontal=True)
+
+# 탭 전환 시 설정값 자동 리세팅 로직
+if mode != st.session_state.prev_mode:
+    if mode == "📦 사입 구조":
+        st.session_state.ui_buy_shipping = "3,000"
+        st.session_state.ui_other_cost = "500"
+        st.session_state.last_trigger = 'price'
+    else:  # 🚚 위탁 구조
+        st.session_state.ui_buy_shipping = "0"
+        st.session_state.ui_other_cost = "0"
+        st.session_state.ui_margin_rate = 30.0  # 위탁 기본 마진율 30% 지정
+        st.session_state.last_trigger = 'margin'
+    st.session_state.prev_mode = mode
+    st.rerun()
+
+# 4. 금액 입력부 렌더링
 col_in1, col_in2 = st.columns(2)
 with col_in1:
     st.subheader("💰 배송비 설정")
@@ -106,7 +121,7 @@ st.text_input("기타(포장, 사은품) (원)", key="ui_other_cost", on_change=
 st.text_input("판매자 택배비 (원)", key="ui_seller_shipping", on_change=format_generic, args=("ui_seller_shipping",))
 st.text_input("광고비 (원)", key="ui_ad_cost", on_change=format_generic, args=("ui_ad_cost",))
 
-# 수치 데이터 안전 파싱 함수
+# 값 안전 파싱 함수
 def get_val(key):
     try: return int(st.session_state[key].replace(",", ""))
     except: return 0
@@ -131,22 +146,36 @@ def price_from_profit(target_profit):
         return max(0, price)
     return 0
 
-# 4. 최상단 예약 구역에 양방향 제어 레이아웃 주입
+# 5. 최상단 예약 구역에 결과 레이아웃 주입
 with top_container:
     st.markdown("### 🏆 실시간 결과 및 목표 조정")
     
-    # 원터치 고정 마진 버튼 (세션 상태 직접 제어 방식으로 수정)
-    btn_col1, btn_col2 = st.columns(2)
-    if btn_col1.button("🎁 순수익 5,000원 남기기"):
-        st.session_state["ui_net_profit"] = "5,000"
-        st.session_state.last_trigger = 'profit'
-        st.rerun()
-    if btn_col2.button("🎁 순수익 10,000원 남기기"):
-        st.session_state["ui_net_profit"] = "10,000"
-        st.session_state.last_trigger = 'profit'
-        st.rerun()
+    # 2x2 구조의 원터치 고정 마진 버튼 배치
+    btn_row1_col1, btn_row1_col2 = st.columns(2)
+    with btn_row1_col1:
+        if st.button("🎁 순수익 5,000원"):
+            st.session_state["ui_net_profit"] = "5,000"
+            st.session_state.last_trigger = 'profit'
+            st.rerun()
+    with btn_row1_col2:
+        if st.button("🎁 순수익 8,000원"):
+            st.session_state["ui_net_profit"] = "8,000"
+            st.session_state.last_trigger = 'profit'
+            st.rerun()
+            
+    btn_row2_col1, btn_row2_col2 = st.columns(2)
+    with btn_row2_col1:
+        if st.button("🎁 순수익 10,000원"):
+            st.session_state["ui_net_profit"] = "10,000"
+            st.session_state.last_trigger = 'profit'
+            st.rerun()
+    with btn_row2_col2:
+        if st.button("🎁 순수익 15,000원"):
+            st.session_state["ui_net_profit"] = "15,000"
+            st.session_state.last_trigger = 'profit'
+            st.rerun()
 
-    # 어떤 입력창이 트리거가 되었느냐에 따라 연동 수식 분기 실행
+    # 입력 소스 역산 분기 실행
     if st.session_state.last_trigger == 'price':
         sell_price = get_val("ui_sell_price")
         total_sales = sell_price + customer_shipping
@@ -176,7 +205,7 @@ with top_container:
         st.session_state["ui_sell_price"] = f"{sell_price:,}"
         st.session_state["ui_net_profit"] = f"{net_profit:,}"
 
-    # 상단 3열 동기화 렌더링
+    # 상단 3열 인풋 필드 렌더링
     col1, col2, col3 = st.columns(3)
     with col1: st.text_input("💰 판매가격 (원)", key="ui_sell_price", on_change=handle_price_change)
     with col2: st.text_input("💸 최종 순수익 (원)", key="ui_net_profit", on_change=handle_profit_change)
@@ -184,12 +213,13 @@ with top_container:
 
     st.markdown("---")
 
-# 5. 접이식 상세 내역 노출
+# 6. 하단 접이식 상세 데이터 확인
 with st.expander("🔍 상세 정산 데이터 확인"):
     sell_price = get_val("ui_sell_price")
     current_fee = (sell_price * (cat_rate + link_rate) / 100) + (customer_shipping * (ship_rate / 100))
     settlement_amount = sell_price + customer_shipping - current_fee
     net_profit = get_val("ui_net_profit")
+    st.write(f"• 현재 적용된 구조: {mode}")
     st.write(f"• 플랫폼 정산금액 (공제 후): {int(settlement_amount):,} 원")
     st.write(f"• 총 매입비용 (고정 원가): {int(total_cost):,} 원")
     st.write(f"• 예상 납부 부가세: {int(net_profit * (vat_rate / 100)) if net_profit > 0 else 0:,} 원")
