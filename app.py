@@ -35,12 +35,12 @@ if 'last_trigger' not in st.session_state: st.session_state.last_trigger = 'pric
 if 'ui_customer_shipping' not in st.session_state: st.session_state.ui_customer_shipping = "0"
 if 'ui_buy_price' not in st.session_state: st.session_state.ui_buy_price = "0"
 if 'ui_buy_shipping' not in st.session_state: st.session_state.ui_buy_shipping = "3,000"
-if 'ui_other_cost' not in st.session_state: st.session_state.ui_other_cost = "500"  # 기본값 300원에서 500원으로 변경
+if 'ui_other_cost' not in st.session_state: st.session_state.ui_other_cost = "500"
 if 'ui_seller_shipping' not in st.session_state: st.session_state.ui_seller_shipping = "0"
 if 'ui_ad_cost' not in st.session_state: st.session_state.ui_ad_cost = "0"
 if 'prev_mode' not in st.session_state: st.session_state.prev_mode = "📦 사입 구조"
 
-# [콜백 함수들] 입력값 변경 시 세 세자리 콤마 포맷팅 강제 적용
+# [콜백 함수들] 입력값 변경 시 세자리 콤마 포맷팅 강제 적용
 def handle_price_change():
     raw = st.session_state.ui_sell_price.replace(",", "")
     try: val = int(raw)
@@ -89,20 +89,19 @@ with col_fee3: ship_rate = st.number_input("배송비 (%)", value=defaults["ship
 
 vat_rate = st.number_input("부가세율 (%)", value=10, step=1)
 
-# 3. 사입 / 위탁 탭 (모바일 최적화 가로형 라디오 버튼)
+# 3. 사입 / 위탁 탭 설정
 st.markdown("---")
 mode = st.radio("📋 운영 형태 선택 (탭)", ["📦 사입 구조", "🚚 위탁 구조"], horizontal=True)
 
-# 탭 전환 시 설정값 자동 리세팅 로직
 if mode != st.session_state.prev_mode:
     if mode == "📦 사입 구조":
         st.session_state.ui_buy_shipping = "3,000"
         st.session_state.ui_other_cost = "500"
         st.session_state.last_trigger = 'price'
-    else:  # 🚚 위탁 구조
+    else:
         st.session_state.ui_buy_shipping = "0"
         st.session_state.ui_other_cost = "0"
-        st.session_state.ui_margin_rate = 30.0  # 위탁 기본 마진율 30% 지정
+        st.session_state.ui_margin_rate = 30.0
         st.session_state.last_trigger = 'margin'
     st.session_state.prev_mode = mode
     st.rerun()
@@ -121,7 +120,6 @@ st.text_input("기타(포장, 사은품) (원)", key="ui_other_cost", on_change=
 st.text_input("판매자 택배비 (원)", key="ui_seller_shipping", on_change=format_generic, args=("ui_seller_shipping",))
 st.text_input("광고비 (원)", key="ui_ad_cost", on_change=format_generic, args=("ui_ad_cost",))
 
-# 값 안전 파싱 함수
 def get_val(key):
     try: return int(st.session_state[key].replace(",", ""))
     except: return 0
@@ -133,10 +131,8 @@ other_cost = get_val("ui_other_cost")
 seller_shipping = get_val("ui_seller_shipping")
 ad_cost = get_val("ui_ad_cost")
 
-# 변하지 않는 고정 원가(총 매입비용) 계산
 total_cost = buy_price + buy_shipping + other_cost + seller_shipping + ad_cost
 
-# 순수익 타겟 기반 판매가 역산 엔진 함수
 def price_from_profit(target_profit):
     pre_vat = target_profit * (1 + vat_rate / 100) if target_profit > 0 else target_profit
     target_settlement = pre_vat + total_cost
@@ -146,33 +142,46 @@ def price_from_profit(target_profit):
         return max(0, price)
     return 0
 
-# 5. 최상단 예약 구역에 결과 레이아웃 주입
+# 5. 최상단 예약 구역에 결과 레이아웃 및 간편 버튼 주입
 with top_container:
     st.markdown("### 🏆 실시간 결과 및 목표 조정")
     
-    # 2x2 구조의 원터치 고정 마진 버튼 배치
-    btn_row1_col1, btn_row1_col2 = st.columns(2)
-    with btn_row1_col1:
+    # 순수익 간편 설정 버튼 (2행)
+    btn_r1_c1, btn_r1_c2 = st.columns(2)
+    with btn_r1_c1:
         if st.button("🎁 순수익 5,000원"):
             st.session_state["ui_net_profit"] = "5,000"
             st.session_state.last_trigger = 'profit'
             st.rerun()
-    with btn_row1_col2:
+    with btn_r1_c2:
         if st.button("🎁 순수익 8,000원"):
             st.session_state["ui_net_profit"] = "8,000"
             st.session_state.last_trigger = 'profit'
             st.rerun()
             
-    btn_row2_col1, btn_row2_col2 = st.columns(2)
-    with btn_row2_col1:
+    btn_r2_c1, btn_r2_c2 = st.columns(2)
+    with btn_r2_c1:
         if st.button("🎁 순수익 10,000원"):
             st.session_state["ui_net_profit"] = "10,000"
             st.session_state.last_trigger = 'profit'
             st.rerun()
-    with btn_row2_col2:
+    with btn_r2_c2:
         if st.button("🎁 순수익 15,000원"):
             st.session_state["ui_net_profit"] = "15,000"
             st.session_state.last_trigger = 'profit'
+            st.rerun()
+
+    # 마진율 간편 설정 버튼 추가 (요청사항 반영)
+    btn_r3_c1, btn_r3_c2 = st.columns(2)
+    with btn_r3_c1:
+        if st.button("📈 마진율 30% 맞추기"):
+            st.session_state["ui_margin_rate"] = 30.0
+            st.session_state.last_trigger = 'margin'
+            st.rerun()
+    with btn_r3_c2:
+        if st.button("📈 마진율 50% 맞추기"):
+            st.session_state["ui_margin_rate"] = 50.0
+            st.session_state.last_trigger = 'margin'
             st.rerun()
 
     # 입력 소스 역산 분기 실행
