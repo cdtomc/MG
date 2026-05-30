@@ -56,13 +56,16 @@ st.markdown("""
         padding: 4px 1px !important;
         font-size: 9.5px !important;
         width: 100% !important;
+        height: 48px !important;
+        border-radius: 8px !important;
+        white-space: nowrap !important;
     }
 
     div[data-testid="stRadio"] > label {
         display: none;
     }
 
-    /* 핵심 입력창 공통: 더 연한 회색 박스 */
+    /* 핵심 입력창 공통: 연한 회색 박스 */
     input[aria-label*="매입가격"],
     input[aria-label*="판매가격"],
     input[aria-label*="최종 순수익"],
@@ -75,25 +78,21 @@ st.markdown("""
         box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04) !important;
     }
 
-    /* 매입가격 숫자: 진한 회색 */
     input[aria-label*="매입가격"] {
         color: #334155 !important;
         -webkit-text-fill-color: #334155 !important;
     }
 
-    /* 판매가격 숫자: 파란색 */
     input[aria-label*="판매가격"] {
         color: #2563eb !important;
         -webkit-text-fill-color: #2563eb !important;
     }
 
-    /* 최종 순수익 숫자: 초록색 */
     input[aria-label*="최종 순수익"] {
         color: #16a34a !important;
         -webkit-text-fill-color: #16a34a !important;
     }
 
-    /* 마진율 숫자: 빨간색 */
     input[aria-label*="마진율"] {
         color: #dc2626 !important;
         -webkit-text-fill-color: #dc2626 !important;
@@ -108,82 +107,51 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.20) !important;
     }
 
-    /* HTML 원터치 버튼 그리드 */
-    .money-btn-grid {
-        display: grid;
-        grid-template-columns: repeat(10, minmax(0, 1fr));
-        gap: 8px 10px;
-        margin-top: 4px;
-        margin-bottom: 12px;
-    }
-
-    .money-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 48px;
-        border-radius: 8px;
-        border: 1px solid #d1d5db;
-        background-color: #ffffff;
-        color: #111827 !important;
-        text-decoration: none !important;
-        font-size: 14px;
-        font-weight: 500;
-        box-sizing: border-box;
-        white-space: nowrap;
-    }
-
-    .money-btn:hover {
-        background-color: #f3f4f6;
-        border-color: #9ca3af;
-        text-decoration: none !important;
-    }
-
-    /* 5,000원: 파스텔 옐로우 */
-    .money-btn-yellow {
+    /* 5,000원 버튼 */
+    div.st-key-profit_5000 button {
         background-color: #fef3c7 !important;
         color: #92400e !important;
         border: 1px solid #fcd34d !important;
         font-weight: 900 !important;
     }
 
-    .money-btn-yellow:hover {
+    div.st-key-profit_5000 button:hover {
         background-color: #fde68a !important;
     }
 
-    /* 10,000원: 파스텔 블루 */
-    .money-btn-blue {
+    /* 10,000원 버튼 */
+    div.st-key-profit_10000 button {
         background-color: #dbeafe !important;
         color: #1e40af !important;
         border: 1px solid #93c5fd !important;
         font-weight: 900 !important;
     }
 
-    .money-btn-blue:hover {
+    div.st-key-profit_10000 button:hover {
         background-color: #bfdbfe !important;
     }
 
-    /* 30%: 파스텔 그린 */
-    .money-btn-green {
+    /* 30% 버튼 */
+    div.st-key-roi_30 button {
         background-color: #dcfce7 !important;
         color: #166534 !important;
         border: 1px solid #86efac !important;
         font-weight: 900 !important;
     }
 
-    .money-btn-green:hover {
+    div.st-key-roi_30 button:hover {
         background-color: #bbf7d0 !important;
     }
 
-    /* 50%: 파스텔 레드 */
-    .money-btn-red {
+    /* 50% 버튼 */
+    div.st-key-roi_50 button {
         background-color: #fee2e2 !important;
         color: #991b1b !important;
         border: 1px solid #fca5a5 !important;
         font-weight: 900 !important;
     }
 
-    .money-btn-red:hover {
+    div.st-key-roi_50 button:hover {
         background-color: #fecaca !important;
     }
     </style>
@@ -203,39 +171,39 @@ def sync_platform_fees():
     st.session_state.cat_rate = d["cat"]
     st.session_state.link_rate = d["link"]
     st.session_state.ship_rate = d["ship"]
-    st.session_state.last_trigger = 'price'
+    st.session_state.last_trigger = "price"
 
-if 'selected_platform' not in st.session_state:
+if "selected_platform" not in st.session_state:
     st.session_state.selected_platform = "스마트스토어"
-if 'cat_rate' not in st.session_state:
+if "cat_rate" not in st.session_state:
     st.session_state.cat_rate = platform_db[st.session_state.selected_platform]["cat"]
-if 'link_rate' not in st.session_state:
+if "link_rate" not in st.session_state:
     st.session_state.link_rate = platform_db[st.session_state.selected_platform]["link"]
-if 'ship_rate' not in st.session_state:
+if "ship_rate" not in st.session_state:
     st.session_state.ship_rate = platform_db[st.session_state.selected_platform]["ship"]
 
-if 'ui_sell_price' not in st.session_state:
+if "ui_sell_price" not in st.session_state:
     st.session_state.ui_sell_price = "0"
-if 'ui_net_profit' not in st.session_state:
+if "ui_net_profit" not in st.session_state:
     st.session_state.ui_net_profit = "0"
-if 'ui_margin_rate' not in st.session_state:
+if "ui_margin_rate" not in st.session_state:
     st.session_state.ui_margin_rate = 0.0
-if 'last_trigger' not in st.session_state:
-    st.session_state.last_trigger = 'price'
+if "last_trigger" not in st.session_state:
+    st.session_state.last_trigger = "price"
 
-if 'ui_customer_shipping' not in st.session_state:
+if "ui_customer_shipping" not in st.session_state:
     st.session_state.ui_customer_shipping = "0"
-if 'ui_buy_price' not in st.session_state:
+if "ui_buy_price" not in st.session_state:
     st.session_state.ui_buy_price = "0"
-if 'ui_buy_shipping' not in st.session_state:
+if "ui_buy_shipping" not in st.session_state:
     st.session_state.ui_buy_shipping = "3,000"
-if 'ui_other_cost' not in st.session_state:
+if "ui_other_cost" not in st.session_state:
     st.session_state.ui_other_cost = "500"
-if 'ui_seller_shipping' not in st.session_state:
+if "ui_seller_shipping" not in st.session_state:
     st.session_state.ui_seller_shipping = "0"
-if 'ui_ad_cost' not in st.session_state:
+if "ui_ad_cost" not in st.session_state:
     st.session_state.ui_ad_cost = "0"
-if 'prev_mode' not in st.session_state:
+if "prev_mode" not in st.session_state:
     st.session_state.prev_mode = "📦 사입 구조"
 
 def parse_money(value):
@@ -245,86 +213,30 @@ def parse_money(value):
     except:
         return 0
 
-def get_query_value(name):
-    try:
-        value = st.query_params.get(name)
-        if isinstance(value, list):
-            return value[0] if value else None
-        return value
-    except:
-        return None
-
-profit_param = get_query_value("profit_target")
-roi_param = get_query_value("roi_target")
-
-if profit_param:
-    profit_value = parse_money(profit_param)
-    if profit_value > 0:
-        st.session_state.ui_net_profit = f"{profit_value:,}"
-        st.session_state.last_trigger = "profit"
-    st.query_params.clear()
-    st.rerun()
-
-if roi_param:
-    try:
-        roi_value = float(roi_param)
-        st.session_state.ui_margin_rate = roi_value
-        st.session_state.last_trigger = "margin"
-    except:
-        pass
-    st.query_params.clear()
-    st.rerun()
-
 def handle_price_change():
     val = parse_money(st.session_state.ui_sell_price)
     st.session_state.ui_sell_price = f"{val:,}"
-    st.session_state.last_trigger = 'price'
+    st.session_state.last_trigger = "price"
 
 def handle_profit_change():
     val = parse_money(st.session_state.ui_net_profit)
     st.session_state.ui_net_profit = f"{val:,}"
-    st.session_state.last_trigger = 'profit'
+    st.session_state.last_trigger = "profit"
 
 def handle_margin_change():
-    st.session_state.last_trigger = 'margin'
+    st.session_state.last_trigger = "margin"
 
 def format_generic(key):
     val = parse_money(st.session_state[key])
     st.session_state[key] = f"{val:,}"
 
-def make_profit_grid():
-    rows = [
-        range(1000, 10001, 1000),
-        range(11000, 20001, 1000),
-        range(21000, 30001, 1000)
-    ]
+def set_profit_target(value):
+    st.session_state.ui_net_profit = f"{value:,}"
+    st.session_state.last_trigger = "profit"
 
-    html = ""
-    for row in rows:
-        html += '<div class="money-btn-grid">'
-        for value in row:
-            extra_class = ""
-            if value == 5000:
-                extra_class = " money-btn-yellow"
-            elif value == 10000:
-                extra_class = " money-btn-blue"
-
-            html += f'<a class="money-btn{extra_class}" href="?profit_target={value}" target="_self">{value:,}</a>'
-        html += "</div>"
-    return html
-
-def make_roi_grid():
-    html = '<div class="money-btn-grid">'
-    for pct in range(10, 110, 10):
-        extra_class = ""
-        if pct == 30:
-            extra_class = " money-btn-green"
-        elif pct == 50:
-            extra_class = " money-btn-red"
-
-        html += f'<a class="money-btn{extra_class}" href="?roi_target={pct}" target="_self">{pct}%</a>'
-    html += "</div>"
-    return html
+def set_roi_target(value):
+    st.session_state.ui_margin_rate = float(value)
+    st.session_state.last_trigger = "margin"
 
 st.title("📊 마진율 계산기")
 
@@ -359,12 +271,12 @@ if mode != st.session_state.prev_mode:
     if mode == "📦 사입 구조":
         st.session_state.ui_buy_shipping = "3,000"
         st.session_state.ui_other_cost = "500"
-        st.session_state.last_trigger = 'price'
+        st.session_state.last_trigger = "price"
     else:
         st.session_state.ui_buy_shipping = "0"
         st.session_state.ui_other_cost = "0"
         st.session_state.ui_margin_rate = 30.0
-        st.session_state.last_trigger = 'margin'
+        st.session_state.last_trigger = "margin"
     st.session_state.prev_mode = mode
     st.rerun()
 
@@ -424,34 +336,64 @@ def price_from_profit(target_profit):
     return 0
 
 with top_container:
-    st.text_input("📦 매입가격 [제품 원가] (원)", key="ui_buy_price", on_change=format_generic, args=("ui_buy_price",))
+    st.text_input(
+        "📦 매입가격 [제품 원가] (원)",
+        key="ui_buy_price",
+        on_change=format_generic,
+        args=("ui_buy_price",)
+    )
 
     st.caption("💵 목표 순수익 원터치 설정")
-    st.markdown(make_profit_grid(), unsafe_allow_html=True)
+
+    profit_rows = [
+        range(1000, 10001, 1000),
+        range(11000, 20001, 1000),
+        range(21000, 30001, 1000)
+    ]
+
+    for row in profit_rows:
+        cols = st.columns(10)
+        for idx, value in enumerate(row):
+            with cols[idx]:
+                st.button(
+                    f"{value:,}",
+                    key=f"profit_{value}",
+                    on_click=set_profit_target,
+                    args=(value,)
+                )
 
     st.caption("📈 목표 ROI(원가대비 수익률) 설정")
-    st.markdown(make_roi_grid(), unsafe_allow_html=True)
 
-    if total_cost <= 0 and st.session_state.last_trigger == 'margin':
+    roi_cols = st.columns(10)
+    for idx, pct in enumerate(range(10, 110, 10)):
+        with roi_cols[idx]:
+            st.button(
+                f"{pct}%",
+                key=f"roi_{pct}",
+                on_click=set_roi_target,
+                args=(pct,)
+            )
+
+    if total_cost <= 0 and st.session_state.last_trigger == "margin":
         st.warning("⚠️ 매입가격 또는 원가를 먼저 입력해야 목표 ROI 계산이 가능합니다!")
         st.session_state["ui_margin_rate"] = 0.0
-        st.session_state.last_trigger = 'price'
+        st.session_state.last_trigger = "price"
 
-    if st.session_state.last_trigger == 'price':
+    if st.session_state.last_trigger == "price":
         sell_price = parse_money(st.session_state.ui_sell_price)
         net_profit, margin_rate, settlement_amount, est_vat = calc_forward_metrics(sell_price)
         st.session_state["ui_net_profit"] = f"{net_profit:,}"
         st.session_state["ui_margin_rate"] = float(margin_rate)
-        
-    elif st.session_state.last_trigger == 'profit':
+
+    elif st.session_state.last_trigger == "profit":
         target_profit = parse_money(st.session_state.ui_net_profit)
         sell_price = price_from_profit(target_profit)
         net_profit, margin_rate, settlement_amount, est_vat = calc_forward_metrics(sell_price)
         st.session_state["ui_sell_price"] = f"{sell_price:,}"
         st.session_state["ui_net_profit"] = f"{net_profit:,}"
         st.session_state["ui_margin_rate"] = float(margin_rate)
-        
-    elif st.session_state.last_trigger == 'margin':
+
+    elif st.session_state.last_trigger == "margin":
         target_margin_rate = st.session_state["ui_margin_rate"]
         target_profit = int(total_cost * (target_margin_rate / 100))
         sell_price = price_from_profit(target_profit)
@@ -474,7 +416,7 @@ with st.expander("🔍 상세 정산 데이터 확인"):
     current_sell_price = parse_money(st.session_state.ui_sell_price)
     actual_profit, actual_roi, actual_settlement, actual_vat = calc_forward_metrics(current_sell_price)
     sales_margin_rate = (actual_profit / current_sell_price * 100) if current_sell_price > 0 else 0.0
-    
+
     st.write(f"• 현재 적용된 구조: {mode}")
     st.write(f"• 플랫폼 정산금액 (공제 후): {int(round(actual_settlement)):,} 원")
     st.write(f"• 총 매입비용 (고정 원가): {int(total_cost):,} 원")
