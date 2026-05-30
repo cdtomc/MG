@@ -2,7 +2,7 @@ import streamlit as st
 
 st.set_page_config(page_title="마진율 계산기", layout="centered")
 
-# 모바일 초밀착 압축 레이아웃 및 커스텀 색상 버튼 CSS 주입
+# 모바일 화면 극대화를 위한 울트라 초밀착 여백 및 강제 색상 지정 CSS 스타일
 st.markdown("""
     <style>
     .block-container {
@@ -12,23 +12,26 @@ st.markdown("""
         padding-right: 0.5rem !important;
     }
     div[data-testid="stVerticalBlock"] > div {
-        padding-bottom: 0.08rem !important;
-        margin-bottom: 0.08rem !important;
+        padding-bottom: 0.05rem !important;
+        margin-bottom: 0.05rem !important;
     }
     hr {
-        margin-top: 0.25rem !important;
-        margin-bottom: 0.25rem !important;
+        margin-top: 0.2rem !important;
+        margin-bottom: 0.2rem !important;
     }
     h1, h2, h3, h4, h5 {
         margin-top: 0.05rem !important;
-        margin-bottom: 0.1rem !important;
+        margin-bottom: 0.08rem !important;
     }
-    /* 모바일에서 열이 아래로 깨지지 않고 가로 한 줄 유지를 강제하는 마법의 CSS */
+    
+    /* 📱 모바일 가로 한 줄 배치 강제 스크립트 */
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         gap: 2px !important;
+        margin-bottom: 0.05rem !important;
+        margin-top: 0.05rem !important;
     }
     div[data-testid="column"] {
         flex: 1 1 0% !important;
@@ -36,35 +39,50 @@ st.markdown("""
         padding-left: 1px !important;
         padding-right: 1px !important;
     }
-    /* 버튼 텍스트 크기 및 내부 여백 최소화 */
     div[data-testid="column"] button {
-        padding: 3px 2px !important;
-        font-size: 11px !important;
+        padding: 3px 1px !important;
+        font-size: 10px !important;
         width: 100% !important;
     }
-    /* 라디오 버튼 타이틀 가리기 */
     div[data-testid="stRadio"] > label {
         display: none;
     }
+    .stCaption {
+        margin-top: 1px !important;
+        margin-bottom: 1px !important;
+        font-size: 11px !important;
+    }
+
+    /* 🎨 [완벽 반영] 순서 구조 기반 버튼 색상 강제 오버라이드 */
+    /* 2번째 가로 블록(순수익 행)의 3번째 열 (10,000원) -> 파란색 */
+    div[data-testid="stHorizontalBlock"]:nth-of-type(2) div[data-testid="column"]:nth-child(3) button {
+        background-color: #1d4ed8 !important;
+        color: white !important;
+        font-weight: bold !important;
+        border: none !important;
+    }
+    /* 3번째 가로 블록(마진율 행)의 3번째 열 (30%) -> 초록색 */
+    div[data-testid="stHorizontalBlock"]:nth-of-type(3) div[data-testid="column"]:nth-child(3) button {
+        background-color: #15803d !important;
+        color: white !important;
+        font-weight: bold !important;
+        border: none !important;
+    }
+    /* 3번째 가로 블록(마진율 행)의 5번째 열 (50%) -> 빨간색 */
+    div[data-testid="stHorizontalBlock"]:nth-of-type(3) div[data-testid="column"]:nth-child(5) button {
+        background-color: #b91c1c !important;
+        color: white !important;
+        font-weight: bold !important;
+        border: none !important;
+    }
     
-    /* 🎨 요청하신 특정 버튼 색상 커스텀 */
-    .blue-btn button {
-        background-color: #0056b3 !important;
-        color: white !important;
+    /* 📦 [강조] 매입가격 입력창 배경색을 진하게 하고 눈에 띄게 변경 */
+    div[data-testid="stTextInput"]:nth-of-type(1) input {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+        border: 2px solid #14b8a6 !important;
         font-weight: bold !important;
-        border: none !important;
-    }
-    .green-btn button {
-        background-color: #1e7e34 !important;
-        color: white !important;
-        font-weight: bold !important;
-        border: none !important;
-    }
-    .red-btn button {
-        background-color: #bd2130 !important;
-        color: white !important;
-        font-weight: bold !important;
-        border: none !important;
+        font-size: 15px !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -79,7 +97,7 @@ platform_db = {
     "기타 마켓": {"cat": 11.0, "link": 2.0, "ship": 3.3}
 }
 
-# 1. 시스템 핵심 세션 상태 초기화
+# 시스템 핵심 세션 상태 초기화
 if 'selected_platform' not in st.session_state: st.session_state.selected_platform = "스마트스토어"
 if 'ui_sell_price' not in st.session_state: st.session_state.ui_sell_price = "0"
 if 'ui_net_profit' not in st.session_state: st.session_state.ui_net_profit = "0"
@@ -94,7 +112,7 @@ if 'ui_seller_shipping' not in st.session_state: st.session_state.ui_seller_ship
 if 'ui_ad_cost' not in st.session_state: st.session_state.ui_ad_cost = "0"
 if 'prev_mode' not in st.session_state: st.session_state.prev_mode = "📦 사입 구조"
 
-# 입력값 변경 시 세자리 콤마 포맷팅 강제 적용 콜백
+# 입력값 변환 콜백 함수들
 def handle_price_change():
     raw = st.session_state.ui_sell_price.replace(",", "")
     try: val = int(raw)
@@ -120,10 +138,11 @@ def format_generic(key):
 
 st.title("📊 마진율 계산기")
 
-# 최상단 결과 레이아웃 공간 확보 (고정)
+# 최상단 결과 레이아웃 공간 확보
 top_container = st.container()
 
-# 2. 운영 형태 선택 탭 + 라디오 버튼 한 줄 결합
+# 2. 운영 형태 선택 탭
+st.markdown("---")
 col_mode1, col_mode2 = st.columns([1, 1.3])
 with col_mode1:
     st.markdown("##### 📋 운영 형태 선택")
@@ -143,7 +162,7 @@ if mode != st.session_state.prev_mode:
     st.session_state.prev_mode = mode
     st.rerun()
 
-# 3. 금액 원가 입력 섹션 (매입가격이 최상단으로 빠져서 남은 잔여 옵션들)
+# 3. 배송비 및 기타 원가 설정부
 st.subheader("💰 배송비 및 기타 지출 설정")
 st.text_input("고객배송비 (원)", key="ui_customer_shipping", on_change=format_generic, args=("ui_customer_shipping",))
 st.text_input("매입운송비 (원)", key="ui_buy_shipping", on_change=format_generic, args=("ui_buy_shipping",))
@@ -163,7 +182,7 @@ with col_fee3: ship_rate = st.number_input("배송비 (%)", value=defaults["ship
 
 vat_rate = st.number_input("부가세율 (%)", value=10, step=1)
 
-# 데이터 안전 파싱
+# 데이터 파싱 및 연산 준비
 def get_val(key):
     try: return int(st.session_state[key].replace(",", ""))
     except: return 0
@@ -186,58 +205,33 @@ def price_from_profit(target_profit):
         return max(0, price)
     return 0
 
-# 5. 최상단 예약 구역 연산 및 렌더링 엔진
+# 5. 최상단 엔진 렌더링 구역
 with top_container:
     col_head1, col_head2 = st.columns([1.3, 1])
     with col_head1: st.markdown("### 🏆 실시간 결과")
     with col_head2: st.selectbox("쇼핑몰 선택", list(platform_db.keys()), key="selected_platform", label_visibility="collapsed")
     
-    # [위치 조정] 매입가격을 실시간 결과창 바로 밑, 원터치 설정 위로 이동 완료!
+    # [위치 조정 완료] 매입가격이 결과창 바로 밑, 버튼 세트 바로 위로 전진 배치 및 딥네이비 커스텀 스타일링 반영
     st.text_input("📦 매입가격 [제품 원가] (원)", key="ui_buy_price", on_change=format_generic, args=("ui_buy_price",))
 
-    # 순수익 간편 버튼 확장 (2만, 2.5만, 3만 추가 및 레이아웃 정리)
+    # [한 줄 통합 완료] 순수익 원터치 설정 버튼 7개 가로 올인원 배열
     st.caption("💵 목표 순수익 원터치 설정")
-    p_row1 = st.columns(4)
-    if p_row1[0].button("5,000원"):
-        st.session_state["ui_net_profit"] = "5,000"; st.session_state.last_trigger = 'profit'; st.rerun()
-    if p_row1[1].button("8,000원"):
-        st.session_state["ui_net_profit"] = "8,000"; st.session_state.last_trigger = 'profit'; st.rerun()
-    # 10,000원 버튼 파란색 컬러 주입
-    st.markdown('<div class="blue-btn">', unsafe_allow_html=True)
-    if p_row1[2].button("10,000원"):
-        st.session_state["ui_net_profit"] = "10,000"; st.session_state.last_trigger = 'profit'; st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
-    if p_row1[3].button("15,000원"):
-        st.session_state["ui_net_profit"] = "15,000"; st.session_state.last_trigger = 'profit'; st.rerun()
-            
-    p_row2 = st.columns(4)
-    if p_row2[0].button("20,000원"):
-        st.session_state["ui_net_profit"] = "20,000"; st.session_state.last_trigger = 'profit'; st.rerun()
-    if p_row2[1].button("25,000원"):
-        st.session_state["ui_net_profit"] = "25,000"; st.session_state.last_trigger = 'profit'; st.rerun()
-    if p_row2[2].button("30,000원"):
-        st.session_state["ui_net_profit"] = "30,000"; st.session_state.last_trigger = 'profit'; st.rerun()
+    p_row = st.columns(7)
+    profits_layout = [("5천", "5,000"), ("8천", "8,000"), ("1만", "10,000"), ("1.5만", "15,000"), ("2만", "20,000"), ("2.5만", "25,000"), ("3만", "30,000")]
+    for idx, (lbl, val) in enumerate(profits_layout):
+        if p_row[idx].button(lbl):
+            st.session_state["ui_net_profit"] = val
+            st.session_state.last_trigger = 'profit'; st.rerun()
 
-    # 마진율 간편 버튼 확장 (10% ~ 100% 한 줄에 10개 강제 정렬 완료!)
+    # [간격 정밀 수정 완료] 마진율 10개 버튼 가로 초압축 배치 및 타겟 컬러 바인딩
     st.caption("📈 목표 마진율 원터치 설정")
     m_row = st.columns(10)
     for pct in range(10, 110, 10):
         idx = (pct // 10) - 1
-        if pct == 30:  # 30% 버튼 초록색 주입
-            st.markdown('<div class="green-btn">', unsafe_allow_html=True)
-            if m_row[idx].button(f"{pct}%"):
-                st.session_state["ui_margin_rate"] = float(pct); st.session_state.last_trigger = 'margin'; st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-        elif pct == 50:  # 50% 버튼 빨간색 주입
-            st.markdown('<div class="red-btn">', unsafe_allow_html=True)
-            if m_row[idx].button(f"{pct}%"):
-                st.session_state["ui_margin_rate"] = float(pct); st.session_state.last_trigger = 'margin'; st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-        else:
-            if m_row[idx].button(f"{pct}%"):
-                st.session_state["ui_margin_rate"] = float(pct); st.session_state.last_trigger = 'margin'; st.rerun()
+        if m_row[idx].button(f"{pct}%"):
+            st.session_state["ui_margin_rate"] = float(pct); st.session_state.last_trigger = 'margin'; st.rerun()
 
-    # 역산 엔진 구동
+    # 역산 핵심 분기문 처리
     if st.session_state.last_trigger == 'price':
         sell_price = get_val("ui_sell_price")
         total_sales = sell_price + customer_shipping
@@ -267,15 +261,13 @@ with top_container:
         st.session_state["ui_sell_price"] = f"{sell_price:,}"
         st.session_state["ui_net_profit"] = f"{net_profit:,}"
 
-    # 상단 결과 메인 인풋 필드 3열 배치
+    # 판매가격, 최종순수익, 마진율 입력창 간격 조밀화 완료
     col1, col2, col3 = st.columns(3)
     with col1: st.text_input("💰 판매가격 (원)", key="ui_sell_price", on_change=handle_price_change)
     with col2: st.text_input("💸 최종 순수익 (원)", key="ui_net_profit", on_change=handle_profit_change)
     with col3: st.number_input("📈 마진율 (ROI %)", key="ui_margin_rate", step=1.0, on_change=handle_margin_change)
 
-    st.markdown("---")
-
-# 6. 하단 접이식 세부 내역 데이터
+# 6. 하단 접이식 세부 정산서 노출
 with st.expander("🔍 상세 정산 데이터 확인"):
     sell_price = get_val("ui_sell_price")
     current_fee = (sell_price * (cat_rate + link_rate) / 100) + (customer_shipping * (ship_rate / 100))
