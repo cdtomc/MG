@@ -62,30 +62,50 @@ st.markdown("""
         display: none;
     }
 
-    /* 핵심 입력창 색상: 매입가격 / 판매가격 / 최종 순수익 / 마진율 */
+    /* 핵심 입력창 공통: 더 연한 회색 박스 */
     input[aria-label*="매입가격"],
     input[aria-label*="판매가격"],
     input[aria-label*="최종 순수익"],
     input[aria-label*="마진율"] {
-        background-color: #d1d5db !important;
-        color: #1d4ed8 !important;
-        -webkit-text-fill-color: #1d4ed8 !important;
-        border: 1.5px solid #94a3b8 !important;
+        background-color: #f1f5f9 !important;
+        border: 1.5px solid #cbd5e1 !important;
         font-weight: 900 !important;
         font-size: 16px !important;
         letter-spacing: -0.2px !important;
-        box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.10), 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+        box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    /* 매입가격 숫자: 진한 회색 */
+    input[aria-label*="매입가격"] {
+        color: #334155 !important;
+        -webkit-text-fill-color: #334155 !important;
+    }
+
+    /* 판매가격 숫자: 파란색 */
+    input[aria-label*="판매가격"] {
+        color: #2563eb !important;
+        -webkit-text-fill-color: #2563eb !important;
+    }
+
+    /* 최종 순수익 숫자: 초록색 */
+    input[aria-label*="최종 순수익"] {
+        color: #16a34a !important;
+        -webkit-text-fill-color: #16a34a !important;
+    }
+
+    /* 마진율 숫자: 빨간색 */
+    input[aria-label*="마진율"] {
+        color: #dc2626 !important;
+        -webkit-text-fill-color: #dc2626 !important;
     }
 
     input[aria-label*="매입가격"]:focus,
     input[aria-label*="판매가격"]:focus,
     input[aria-label*="최종 순수익"]:focus,
     input[aria-label*="마진율"]:focus {
-        background-color: #cbd5e1 !important;
-        color: #172554 !important;
-        -webkit-text-fill-color: #172554 !important;
-        border: 2px solid #2563eb !important;
-        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18) !important;
+        background-color: #e2e8f0 !important;
+        border: 2px solid #94a3b8 !important;
+        box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.20) !important;
     }
 
     /* HTML 원터치 버튼 그리드 */
@@ -119,6 +139,19 @@ st.markdown("""
         text-decoration: none !important;
     }
 
+    /* 5,000원: 파스텔 옐로우 */
+    .money-btn-yellow {
+        background-color: #fef3c7 !important;
+        color: #92400e !important;
+        border: 1px solid #fcd34d !important;
+        font-weight: 900 !important;
+    }
+
+    .money-btn-yellow:hover {
+        background-color: #fde68a !important;
+    }
+
+    /* 10,000원: 파스텔 블루 */
     .money-btn-blue {
         background-color: #dbeafe !important;
         color: #1e40af !important;
@@ -130,6 +163,7 @@ st.markdown("""
         background-color: #bfdbfe !important;
     }
 
+    /* 30%: 파스텔 그린 */
     .money-btn-green {
         background-color: #dcfce7 !important;
         color: #166534 !important;
@@ -141,6 +175,7 @@ st.markdown("""
         background-color: #bbf7d0 !important;
     }
 
+    /* 50%: 파스텔 레드 */
     .money-btn-red {
         background-color: #fee2e2 !important;
         color: #991b1b !important;
@@ -268,7 +303,12 @@ def make_profit_grid():
     for row in rows:
         html += '<div class="money-btn-grid">'
         for value in row:
-            extra_class = " money-btn-blue" if value == 10000 else ""
+            extra_class = ""
+            if value == 5000:
+                extra_class = " money-btn-yellow"
+            elif value == 10000:
+                extra_class = " money-btn-blue"
+
             html += f'<a class="money-btn{extra_class}" href="?profit_target={value}" target="_self">{value:,}</a>'
         html += "</div>"
     return html
@@ -281,6 +321,7 @@ def make_roi_grid():
             extra_class = " money-btn-green"
         elif pct == 50:
             extra_class = " money-btn-red"
+
         html += f'<a class="money-btn{extra_class}" href="?roi_target={pct}" target="_self">{pct}%</a>'
     html += "</div>"
     return html
