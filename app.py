@@ -174,7 +174,7 @@ def sync_platform_fees():
     st.session_state.last_trigger = "price"
 
 if "selected_platform" not in st.session_state:
-    st.session_state.selected_platform = "스마트스토어"
+    st.session_state.selected_platform = "쿠팡"
 if "cat_rate" not in st.session_state:
     st.session_state.cat_rate = platform_db[st.session_state.selected_platform]["cat"]
 if "link_rate" not in st.session_state:
