@@ -103,21 +103,15 @@ if mode != st.session_state.prev_mode:
     st.session_state.prev_mode = mode
     st.rerun()
 
-# 3. 금액 원가 입력 섹션 (자동 콤마)
-col_in1, col_in2 = st.columns(2)
-with col_in1:
-    st.subheader("💰 배송비 설정")
-    st.text_input("고객배송비 (원)", key="ui_customer_shipping", on_change=format_generic, args=("ui_customer_shipping",))
-with col_in2:
-    st.subheader("📦 원가 설정")
-    st.text_input("매입가격 (원)", key="ui_buy_price", on_change=format_generic, args=("ui_buy_price",))
-
+# 3. 금액 원가 입력 섹션 (매입가격 상단 이동으로 제외됨)
+st.subheader("💰 배송비 및 기타 지출 설정")
+st.text_input("고객배송비 (원)", key="ui_customer_shipping", on_change=format_generic, args=("ui_customer_shipping",))
 st.text_input("매입운송비 (원)", key="ui_buy_shipping", on_change=format_generic, args=("ui_buy_shipping",))
 st.text_input("기타(포장, 사은품) (원)", key="ui_other_cost", on_change=format_generic, args=("ui_other_cost",))
 st.text_input("판매자 택배비 (원)", key="ui_seller_shipping", on_change=format_generic, args=("ui_seller_shipping",))
 st.text_input("광고비 (원)", key="ui_ad_cost", on_change=format_generic, args=("ui_ad_cost",))
 
-# 4. 수수료 세부 설정 (값 매칭 자동화)
+# 4. 수수료 세부 설정
 st.markdown("---")
 st.subheader("🛒 수수료 세부 설정")
 defaults = platform_db[st.session_state.selected_platform]
@@ -154,43 +148,37 @@ def price_from_profit(target_profit):
 
 # 5. 최상단 예약 구역 연산 및 렌더링 엔진
 with top_container:
-    # 대제목과 쇼핑몰 선택 드롭다운을 가로 한 줄로 결합 (요청사항 반영)
     col_head1, col_head2 = st.columns([1.3, 1])
-    with col_head1:
-        st.markdown("### 🏆 실시간 결과")
-    with col_head2:
-        st.selectbox("쇼핑몰 선택", list(platform_db.keys()), key="selected_platform", label_visibility="collapsed")
+    with col_head1: st.markdown("### 🏆 실시간 결과")
+    with col_head2: st.selectbox("쇼핑몰 선택", list(platform_db.keys()), key="selected_platform", label_visibility="collapsed")
     
-    # 순수익 간편 버튼 4개
+    # 순수익 간편 버튼 확장 (5k, 8k, 10k, 15k, 20k, 25k, 30k)
     st.caption("💵 목표 순수익 원터치 설정")
-    p_c1, p_c2, p_c3, p_c4 = st.columns(4)
-    with p_c1:
-        if st.button("5,000원"):
-            st.session_state["ui_net_profit"] = "5,000"
+    p_row1 = st.columns(4)
+    profits_1 = [("5,000원", "5,000"), ("8,000원", "8,000"), ("10,000원", "10,000"), ("15,000원", "15,000")]
+    for i, (lbl, val) in enumerate(profits_1):
+        if p_row1[i].button(lbl):
+            st.session_state["ui_net_profit"] = val
             st.session_state.last_trigger = 'profit'; st.rerun()
-    with p_c2:
-        if st.button("8,000원"):
-            st.session_state["ui_net_profit"] = "8,000"
-            st.session_state.last_trigger = 'profit'; st.rerun()
-    with p_c3:
-        if st.button("10,000원"):
-            st.session_state["ui_net_profit"] = "10,000"
-            st.session_state.last_trigger = 'profit'; st.rerun()
-    with p_c4:
-        if st.button("15,000원"):
-            st.session_state["ui_net_profit"] = "15,000"
+            
+    p_row2 = st.columns(4)
+    profits_2 = [("20,000원", "20,000"), ("25,000원", "25,000"), ("30,000원", "30,000")]
+    for i, (lbl, val) in enumerate(profits_2):
+        if p_row2[i].button(lbl):
+            st.session_state["ui_net_profit"] = val
             st.session_state.last_trigger = 'profit'; st.rerun()
 
-    # 마진율 간편 버튼 2개
+    # 마진율 간편 버튼 확장 (10% ~ 100% 10단위 배열)
     st.caption("📈 목표 마진율 원터치 설정")
-    m_c1, m_c2 = st.columns(2)
-    with m_c1:
-        if st.button("🎯 마진율 30% 맞추기"):
-            st.session_state["ui_margin_rate"] = 30.0
+    m_row1 = st.columns(5)
+    for i, pct in enumerate(range(10, 60, 10)):
+        if m_row1[i].button(f"{pct}%"):
+            st.session_state["ui_margin_rate"] = float(pct)
             st.session_state.last_trigger = 'margin'; st.rerun()
-    with m_c2:
-        if st.button("🎯 마진율 50% 맞추기"):
-            st.session_state["ui_margin_rate"] = 50.0
+    m_row2 = st.columns(5)
+    for i, pct in enumerate(range(60, 110, 10)):
+        if m_row2[i].button(f"{pct}%"):
+            st.session_state["ui_margin_rate"] = float(pct)
             st.session_state.last_trigger = 'margin'; st.rerun()
 
     # 역산 엔진 구동
@@ -229,8 +217,11 @@ with top_container:
     with col2: st.text_input("💸 최종 순수익 (원)", key="ui_net_profit", on_change=handle_profit_change)
     with col3: st.number_input("📈 마진율 (ROI %)", key="ui_margin_rate", step=1.0, on_change=handle_margin_change)
 
+    # 요청사항 반영: 매입가격을 실시간 결과창 바로 밑(최상단 컨트롤 박스 최하단)으로 이동
+    st.text_input("📦 매입가격 [제품 원가] (원)", key="ui_buy_price", on_change=format_generic, args=("ui_buy_price",))
+    st.markdown("---")
+
 # 6. 하단 접이식 세부 내역 데이터
-st.markdown("---")
 with st.expander("🔍 상세 정산 데이터 확인"):
     sell_price = get_val("ui_sell_price")
     current_fee = (sell_price * (cat_rate + link_rate) / 100) + (customer_shipping * (ship_rate / 100))
