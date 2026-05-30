@@ -2,26 +2,30 @@ import streamlit as st
 
 st.set_page_config(page_title="마진율 계산기", layout="centered")
 
-# 모바일 화면 최적화 초밀착 여백 CSS
+# 모바일 화면 극대화를 위한 울트라 초밀착 여백 CSS 스타일
 st.markdown("""
     <style>
     .block-container {
-        padding-top: 0.8rem !important;
-        padding-bottom: 1rem !important;
-        padding-left: 0.8rem !important;
-        padding-right: 0.8rem !important;
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        padding-left: 0.6rem !important;
+        padding-right: 0.6rem !important;
     }
     div[data-testid="stVerticalBlock"] > div {
-        padding-bottom: 0.15rem !important;
-        margin-bottom: 0.15rem !important;
+        padding-bottom: 0.1rem !important;
+        margin-bottom: 0.1rem !important;
     }
     hr {
-        margin-top: 0.4rem !important;
-        margin-bottom: 0.4rem !important;
+        margin-top: 0.3rem !important;
+        margin-bottom: 0.3rem !important;
     }
-    h1, h2, h3, h4 {
-        margin-top: 0.1rem !important;
-        margin-bottom: 0.2rem !important;
+    h1, h2, h3, h4, h5 {
+        margin-top: 0.05rem !important;
+        margin-bottom: 0.15rem !important;
+    }
+    /* 라디오 버튼 위아래 마진 최소화 */
+    div[data-testid="stRadio"] > label {
+        display: none;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -69,9 +73,12 @@ st.title("📊 마진율 계산기")
 # 최상단 결과 레이아웃 공간 확보 (고정)
 top_container = st.container()
 
-# 2. 사입 / 위탁 형태 선택 (위로 이동)
-st.subheader("📋 운영 형태 선택 (탭)")
-mode = st.radio("운영 형태 선택", ["📦 사입 구조", "🚚 위탁 구조"], horizontal=True, label_visibility="collapsed")
+# 2. 운영 형태 선택 탭 + 라디오 버튼 한 줄로 결합 (요청사항 반영)
+col_mode1, col_mode2 = st.columns([1, 1.3])
+with col_mode1:
+    st.markdown("##### 📋 운영 형태 선택")
+with col_mode2:
+    mode = st.radio("운영 형태 선택 라디오", ["📦 사입 구조", "🚚 위탁 구조"], horizontal=True, label_visibility="collapsed")
 
 if mode != st.session_state.prev_mode:
     if mode == "📦 사입 구조":
@@ -86,7 +93,7 @@ if mode != st.session_state.prev_mode:
     st.session_state.prev_mode = mode
     st.rerun()
 
-# 3. 금액 원가 입력 섹션 (위로 이동 및 자동 콤마)
+# 3. 금액 원가 입력 섹션 (자동 콤마)
 col_in1, col_in2 = st.columns(2)
 with col_in1:
     st.subheader("💰 배송비 설정")
@@ -100,7 +107,7 @@ st.text_input("기타(포장, 사은품) (원)", key="ui_other_cost", on_change=
 st.text_input("판매자 택배비 (원)", key="ui_seller_shipping", on_change=format_generic, args=("ui_seller_shipping",))
 st.text_input("광고비 (원)", key="ui_ad_cost", on_change=format_generic, args=("ui_ad_cost",))
 
-# 4. 수수료 및 마켓 설정 (요청대로 맨 아래로 이동)
+# 4. 수수료 및 마켓 설정 (맨 아래 유지)
 st.markdown("---")
 st.subheader("🛒 수수료 및 마켓 설정")
 platform_db = {
@@ -144,47 +151,41 @@ def price_from_profit(target_profit):
         return max(0, price)
     return 0
 
-# 5. 최상단 예약 구역 연산 및 렌더링 엔진 (코드는 아래에 있지만 상단 배치됨)
+# 5. 최상단 예약 구역 연산 및 렌더링 엔진 (구조 개편)
 with top_container:
     st.markdown("### 🏆 실시간 결과 및 목표 조정")
     
-    # 순수익 간편 버튼
-    btn_r1_c1, btn_r1_c2 = st.columns(2)
-    with btn_r1_c1:
-        if st.button("🎁 순수익 5,000원"):
+    # 순수익 간편 버튼 4개를 깔끔하게 가로 한 줄로 통합
+    st.caption("💵 목표 순수익 원터치 설정")
+    p_c1, p_c2, p_c3, p_c4 = st.columns(4)
+    with p_c1:
+        if st.button("5,000원"):
             st.session_state["ui_net_profit"] = "5,000"
-            st.session_state.last_trigger = 'profit'
-            st.rerun()
-    with btn_r1_c2:
-        if st.button("🎁 순수익 8,000원"):
+            st.session_state.last_trigger = 'profit'; st.rerun()
+    with p_c2:
+        if st.button("8,000원"):
             st.session_state["ui_net_profit"] = "8,000"
-            st.session_state.last_trigger = 'profit'
-            st.rerun()
-            
-    btn_r2_c1, btn_r2_c2 = st.columns(2)
-    with btn_r2_c1:
-        if st.button("🎁 순수익 10,000원"):
+            st.session_state.last_trigger = 'profit'; st.rerun()
+    with p_c3:
+        if st.button("10,000원"):
             st.session_state["ui_net_profit"] = "10,000"
-            st.session_state.last_trigger = 'profit'
-            st.rerun()
-    with btn_r2_c2:
-        if st.button("🎁 순수익 15,000원"):
+            st.session_state.last_trigger = 'profit'; st.rerun()
+    with p_c4:
+        if st.button("15,000원"):
             st.session_state["ui_net_profit"] = "15,000"
-            st.session_state.last_trigger = 'profit'
-            st.rerun()
+            st.session_state.last_trigger = 'profit'; st.rerun()
 
-    # 마진율 간편 버튼
-    btn_r3_c1, btn_r3_c2 = st.columns(2)
-    with btn_r3_c1:
-        if st.button("📈 마진율 30% 맞추기"):
+    # 마진율 간편 버튼 2개를 깔끔하게 가로 한 줄로 통합
+    st.caption("📈 목표 마진율 원터치 설정")
+    m_c1, m_c2 = st.columns(2)
+    with m_c1:
+        if st.button("🎯 마진율 30% 맞추기"):
             st.session_state["ui_margin_rate"] = 30.0
-            st.session_state.last_trigger = 'margin'
-            st.rerun()
-    with btn_r3_c2:
-        if st.button("📈 마진율 50% 맞추기"):
+            st.session_state.last_trigger = 'margin'; st.rerun()
+    with m_c2:
+        if st.button("🎯 마진율 50% 맞추기"):
             st.session_state["ui_margin_rate"] = 50.0
-            st.session_state.last_trigger = 'margin'
-            st.rerun()
+            st.session_state.last_trigger = 'margin'; st.rerun()
 
     # 역산 엔진 구동
     if st.session_state.last_trigger == 'price':
