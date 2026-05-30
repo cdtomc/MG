@@ -23,14 +23,24 @@ st.markdown("""
         margin-top: 0.05rem !important;
         margin-bottom: 0.15rem !important;
     }
-    /* 라디오 버튼 위아래 마진 최소화 */
     div[data-testid="stRadio"] > label {
         display: none;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# 1. 시스템 핵심 세션 상태 초기화 및 실시간 콜백 선언
+# 쇼핑몰 데이터베이스 상단 선언
+platform_db = {
+    "스마트스토어": {"cat": 3.63, "link": 3.0, "ship": 3.63},
+    "쿠팡": {"cat": 11.88, "link": 0.0, "ship": 3.3},
+    "11번가": {"cat": 13.0, "link": 2.0, "ship": 3.3},
+    "G마켓": {"cat": 13.0, "link": 2.0, "ship": 3.3},
+    "옥션": {"cat": 13.0, "link": 2.0, "ship": 3.3},
+    "기타 마켓": {"cat": 11.0, "link": 2.0, "ship": 3.3}
+}
+
+# 1. 시스템 핵심 세션 상태 초기화
+if 'selected_platform' not in st.session_state: st.session_state.selected_platform = "스마트스토어"
 if 'ui_sell_price' not in st.session_state: st.session_state.ui_sell_price = "0"
 if 'ui_net_profit' not in st.session_state: st.session_state.ui_net_profit = "0"
 if 'ui_margin_rate' not in st.session_state: st.session_state.ui_margin_rate = 0.0
@@ -73,7 +83,7 @@ st.title("📊 마진율 계산기")
 # 최상단 결과 레이아웃 공간 확보 (고정)
 top_container = st.container()
 
-# 2. 운영 형태 선택 탭 + 라디오 버튼 한 줄로 결합 (요청사항 반영)
+# 2. 운영 형태 선택 탭 + 라디오 버튼 한 줄 결합
 col_mode1, col_mode2 = st.columns([1, 1.3])
 with col_mode1:
     st.markdown("##### 📋 운영 형태 선택")
@@ -107,19 +117,10 @@ st.text_input("기타(포장, 사은품) (원)", key="ui_other_cost", on_change=
 st.text_input("판매자 택배비 (원)", key="ui_seller_shipping", on_change=format_generic, args=("ui_seller_shipping",))
 st.text_input("광고비 (원)", key="ui_ad_cost", on_change=format_generic, args=("ui_ad_cost",))
 
-# 4. 수수료 및 마켓 설정 (맨 아래 유지)
+# 4. 수수료 세부 설정 (값 매칭 자동화)
 st.markdown("---")
-st.subheader("🛒 수수료 및 마켓 설정")
-platform_db = {
-    "스마트스토어": {"cat": 3.63, "link": 3.0, "ship": 3.63},
-    "쿠팡": {"cat": 11.88, "link": 0.0, "ship": 3.3},
-    "11번가": {"cat": 13.0, "link": 2.0, "ship": 3.3},
-    "G마켓": {"cat": 13.0, "link": 2.0, "ship": 3.3},
-    "옥션": {"cat": 13.0, "link": 2.0, "ship": 3.3},
-    "기타 마켓": {"cat": 11.0, "link": 2.0, "ship": 3.3}
-}
-selected_platform = st.selectbox("쇼핑몰 선택", list(platform_db.keys()))
-defaults = platform_db[selected_platform]
+st.subheader("🛒 수수료 세부 설정")
+defaults = platform_db[st.session_state.selected_platform]
 
 col_fee1, col_fee2, col_fee3 = st.columns(3)
 with col_fee1: cat_rate = st.number_input("카테고리 (%)", value=defaults["cat"], step=0.1)
@@ -151,11 +152,16 @@ def price_from_profit(target_profit):
         return max(0, price)
     return 0
 
-# 5. 최상단 예약 구역 연산 및 렌더링 엔진 (구조 개편)
+# 5. 최상단 예약 구역 연산 및 렌더링 엔진
 with top_container:
-    st.markdown("### 🏆 실시간 결과 및 목표 조정")
+    # 대제목과 쇼핑몰 선택 드롭다운을 가로 한 줄로 결합 (요청사항 반영)
+    col_head1, col_head2 = st.columns([1.3, 1])
+    with col_head1:
+        st.markdown("### 🏆 실시간 결과")
+    with col_head2:
+        st.selectbox("쇼핑몰 선택", list(platform_db.keys()), key="selected_platform", label_visibility="collapsed")
     
-    # 순수익 간편 버튼 4개를 깔끔하게 가로 한 줄로 통합
+    # 순수익 간편 버튼 4개
     st.caption("💵 목표 순수익 원터치 설정")
     p_c1, p_c2, p_c3, p_c4 = st.columns(4)
     with p_c1:
@@ -175,7 +181,7 @@ with top_container:
             st.session_state["ui_net_profit"] = "15,000"
             st.session_state.last_trigger = 'profit'; st.rerun()
 
-    # 마진율 간편 버튼 2개를 깔끔하게 가로 한 줄로 통합
+    # 마진율 간편 버튼 2개
     st.caption("📈 목표 마진율 원터치 설정")
     m_c1, m_c2 = st.columns(2)
     with m_c1:
