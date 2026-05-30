@@ -2,29 +2,69 @@ import streamlit as st
 
 st.set_page_config(page_title="마진율 계산기", layout="centered")
 
-# 모바일 화면 극대화를 위한 울트라 초밀착 여백 CSS 스타일
+# 모바일 초밀착 압축 레이아웃 및 커스텀 색상 버튼 CSS 주입
 st.markdown("""
     <style>
     .block-container {
-        padding-top: 0.5rem !important;
+        padding-top: 0.4rem !important;
         padding-bottom: 0.5rem !important;
-        padding-left: 0.6rem !important;
-        padding-right: 0.6rem !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
     }
     div[data-testid="stVerticalBlock"] > div {
-        padding-bottom: 0.1rem !important;
-        margin-bottom: 0.1rem !important;
+        padding-bottom: 0.08rem !important;
+        margin-bottom: 0.08rem !important;
     }
     hr {
-        margin-top: 0.3rem !important;
-        margin-bottom: 0.3rem !important;
+        margin-top: 0.25rem !important;
+        margin-bottom: 0.25rem !important;
     }
     h1, h2, h3, h4, h5 {
         margin-top: 0.05rem !important;
-        margin-bottom: 0.15rem !important;
+        margin-bottom: 0.1rem !important;
     }
+    /* 모바일에서 열이 아래로 깨지지 않고 가로 한 줄 유지를 강제하는 마법의 CSS */
+    div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 2px !important;
+    }
+    div[data-testid="column"] {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+        padding-left: 1px !important;
+        padding-right: 1px !important;
+    }
+    /* 버튼 텍스트 크기 및 내부 여백 최소화 */
+    div[data-testid="column"] button {
+        padding: 3px 2px !important;
+        font-size: 11px !important;
+        width: 100% !important;
+    }
+    /* 라디오 버튼 타이틀 가리기 */
     div[data-testid="stRadio"] > label {
         display: none;
+    }
+    
+    /* 🎨 요청하신 특정 버튼 색상 커스텀 */
+    .blue-btn button {
+        background-color: #0056b3 !important;
+        color: white !important;
+        font-weight: bold !important;
+        border: none !important;
+    }
+    .green-btn button {
+        background-color: #1e7e34 !important;
+        color: white !important;
+        font-weight: bold !important;
+        border: none !important;
+    }
+    .red-btn button {
+        background-color: #bd2130 !important;
+        color: white !important;
+        font-weight: bold !important;
+        border: none !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -103,7 +143,7 @@ if mode != st.session_state.prev_mode:
     st.session_state.prev_mode = mode
     st.rerun()
 
-# 3. 금액 원가 입력 섹션 (매입가격 상단 이동으로 제외됨)
+# 3. 금액 원가 입력 섹션 (매입가격이 최상단으로 빠져서 남은 잔여 옵션들)
 st.subheader("💰 배송비 및 기타 지출 설정")
 st.text_input("고객배송비 (원)", key="ui_customer_shipping", on_change=format_generic, args=("ui_customer_shipping",))
 st.text_input("매입운송비 (원)", key="ui_buy_shipping", on_change=format_generic, args=("ui_buy_shipping",))
@@ -152,34 +192,50 @@ with top_container:
     with col_head1: st.markdown("### 🏆 실시간 결과")
     with col_head2: st.selectbox("쇼핑몰 선택", list(platform_db.keys()), key="selected_platform", label_visibility="collapsed")
     
-    # 순수익 간편 버튼 확장 (5k, 8k, 10k, 15k, 20k, 25k, 30k)
+    # [위치 조정] 매입가격을 실시간 결과창 바로 밑, 원터치 설정 위로 이동 완료!
+    st.text_input("📦 매입가격 [제품 원가] (원)", key="ui_buy_price", on_change=format_generic, args=("ui_buy_price",))
+
+    # 순수익 간편 버튼 확장 (2만, 2.5만, 3만 추가 및 레이아웃 정리)
     st.caption("💵 목표 순수익 원터치 설정")
     p_row1 = st.columns(4)
-    profits_1 = [("5,000원", "5,000"), ("8,000원", "8,000"), ("10,000원", "10,000"), ("15,000원", "15,000")]
-    for i, (lbl, val) in enumerate(profits_1):
-        if p_row1[i].button(lbl):
-            st.session_state["ui_net_profit"] = val
-            st.session_state.last_trigger = 'profit'; st.rerun()
+    if p_row1[0].button("5,000원"):
+        st.session_state["ui_net_profit"] = "5,000"; st.session_state.last_trigger = 'profit'; st.rerun()
+    if p_row1[1].button("8,000원"):
+        st.session_state["ui_net_profit"] = "8,000"; st.session_state.last_trigger = 'profit'; st.rerun()
+    # 10,000원 버튼 파란색 컬러 주입
+    st.markdown('<div class="blue-btn">', unsafe_allow_html=True)
+    if p_row1[2].button("10,000원"):
+        st.session_state["ui_net_profit"] = "10,000"; st.session_state.last_trigger = 'profit'; st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+    if p_row1[3].button("15,000원"):
+        st.session_state["ui_net_profit"] = "15,000"; st.session_state.last_trigger = 'profit'; st.rerun()
             
     p_row2 = st.columns(4)
-    profits_2 = [("20,000원", "20,000"), ("25,000원", "25,000"), ("30,000원", "30,000")]
-    for i, (lbl, val) in enumerate(profits_2):
-        if p_row2[i].button(lbl):
-            st.session_state["ui_net_profit"] = val
-            st.session_state.last_trigger = 'profit'; st.rerun()
+    if p_row2[0].button("20,000원"):
+        st.session_state["ui_net_profit"] = "20,000"; st.session_state.last_trigger = 'profit'; st.rerun()
+    if p_row2[1].button("25,000원"):
+        st.session_state["ui_net_profit"] = "25,000"; st.session_state.last_trigger = 'profit'; st.rerun()
+    if p_row2[2].button("30,000원"):
+        st.session_state["ui_net_profit"] = "30,000"; st.session_state.last_trigger = 'profit'; st.rerun()
 
-    # 마진율 간편 버튼 확장 (10% ~ 100% 10단위 배열)
+    # 마진율 간편 버튼 확장 (10% ~ 100% 한 줄에 10개 강제 정렬 완료!)
     st.caption("📈 목표 마진율 원터치 설정")
-    m_row1 = st.columns(5)
-    for i, pct in enumerate(range(10, 60, 10)):
-        if m_row1[i].button(f"{pct}%"):
-            st.session_state["ui_margin_rate"] = float(pct)
-            st.session_state.last_trigger = 'margin'; st.rerun()
-    m_row2 = st.columns(5)
-    for i, pct in enumerate(range(60, 110, 10)):
-        if m_row2[i].button(f"{pct}%"):
-            st.session_state["ui_margin_rate"] = float(pct)
-            st.session_state.last_trigger = 'margin'; st.rerun()
+    m_row = st.columns(10)
+    for pct in range(10, 110, 10):
+        idx = (pct // 10) - 1
+        if pct == 30:  # 30% 버튼 초록색 주입
+            st.markdown('<div class="green-btn">', unsafe_allow_html=True)
+            if m_row[idx].button(f"{pct}%"):
+                st.session_state["ui_margin_rate"] = float(pct); st.session_state.last_trigger = 'margin'; st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+        elif pct == 50:  # 50% 버튼 빨간색 주입
+            st.markdown('<div class="red-btn">', unsafe_allow_html=True)
+            if m_row[idx].button(f"{pct}%"):
+                st.session_state["ui_margin_rate"] = float(pct); st.session_state.last_trigger = 'margin'; st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            if m_row[idx].button(f"{pct}%"):
+                st.session_state["ui_margin_rate"] = float(pct); st.session_state.last_trigger = 'margin'; st.rerun()
 
     # 역산 엔진 구동
     if st.session_state.last_trigger == 'price':
@@ -217,8 +273,6 @@ with top_container:
     with col2: st.text_input("💸 최종 순수익 (원)", key="ui_net_profit", on_change=handle_profit_change)
     with col3: st.number_input("📈 마진율 (ROI %)", key="ui_margin_rate", step=1.0, on_change=handle_margin_change)
 
-    # 요청사항 반영: 매입가격을 실시간 결과창 바로 밑(최상단 컨트롤 박스 최하단)으로 이동
-    st.text_input("📦 매입가격 [제품 원가] (원)", key="ui_buy_price", on_change=format_generic, args=("ui_buy_price",))
     st.markdown("---")
 
 # 6. 하단 접이식 세부 내역 데이터
