@@ -58,28 +58,22 @@ st.markdown("""
         display: none;
     }
 
-    /* 3. 목표 설정 원터치 버튼군 지정 컬러 */
-    /* 목표 순수익 행 7개 버튼 중 3번째 = 10,000원 → 파란색 */
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="column"]:nth-child(7)) 
-    div[data-testid="column"]:nth-child(3) button {
+    /* 3. 목표 설정 원터치 버튼군 지정 컬러 - key 기반 고정 */
+    .st-key-profit_10000 button {
         background-color: #2563eb !important;
         color: white !important;
         font-weight: bold !important;
         border: none !important;
     }
 
-    /* ROI 행 10개 버튼 중 3번째 = 30% → 초록색 */
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="column"]:nth-child(10)) 
-    div[data-testid="column"]:nth-child(3) button {
+    .st-key-roi_30 button {
         background-color: #16a34a !important;
         color: white !important;
         font-weight: bold !important;
         border: none !important;
     }
 
-    /* ROI 행 10개 버튼 중 5번째 = 50% → 빨간색 */
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="column"]:nth-child(10)) 
-    div[data-testid="column"]:nth-child(5) button {
+    .st-key-roi_50 button {
         background-color: #dc2626 !important;
         color: white !important;
         font-weight: bold !important;
@@ -175,6 +169,11 @@ def handle_profit_change():
     st.session_state.last_trigger = "profit"
 
 def handle_margin_change():
+    try:
+        st.session_state.ui_margin_rate = max(0.0, float(st.session_state.ui_margin_rate))
+    except:
+        st.session_state.ui_margin_rate = 0.0
+
     st.session_state.last_trigger = "margin"
 
 def format_generic(key):
@@ -348,7 +347,9 @@ with top_container:
     ]
 
     for idx, (lbl, val) in enumerate(profits_layout):
-        if p_row[idx].button(lbl):
+        button_key = f"profit_{parse_money(val)}"
+
+        if p_row[idx].button(lbl, key=button_key):
             st.session_state["ui_net_profit"] = val
             st.session_state.last_trigger = "profit"
             st.rerun()
@@ -358,7 +359,8 @@ with top_container:
 
     for pct in range(10, 110, 10):
         idx = (pct // 10) - 1
-        if m_row[idx].button(f"{pct}%"):
+
+        if m_row[idx].button(f"{pct}%", key=f"roi_{pct}"):
             st.session_state["ui_margin_rate"] = float(pct)
             st.session_state.last_trigger = "margin"
             st.rerun()
@@ -412,7 +414,6 @@ with top_container:
         st.markdown('<div class="core-marker"></div>', unsafe_allow_html=True)
         st.number_input(
             "📈 마진율 (ROI %)",
-            min_value=0.0,
             key="ui_margin_rate",
             step=1.0,
             on_change=handle_margin_change
