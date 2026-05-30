@@ -2,36 +2,44 @@ import streamlit as st
 
 st.set_page_config(page_title="마진율 계산기", layout="centered")
 
-# 모바일 화면 극대화를 위한 울트라 초밀착 여백 및 강제 색상 지정 CSS 스타일
+# 모바일 초밀착 압축 및 요소별 타겟 컬러링 지정을 위한 마스터 CSS
 st.markdown("""
     <style>
+    /* 1. 전체 화면 및 요소 간격 울트라 축소 (줄 간격 조밀화) */
     .block-container {
-        padding-top: 0.4rem !important;
-        padding-bottom: 0.5rem !important;
+        padding-top: 0.3rem !important;
+        padding-bottom: 0.4rem !important;
         padding-left: 0.5rem !important;
         padding-right: 0.5rem !important;
     }
     div[data-testid="stVerticalBlock"] > div {
-        padding-bottom: 0.05rem !important;
-        margin-bottom: 0.05rem !important;
+        padding-bottom: 0.02rem !important;
+        margin-bottom: 0.02rem !important;
     }
     hr {
         margin-top: 0.2rem !important;
         margin-bottom: 0.2rem !important;
     }
     h1, h2, h3, h4, h5 {
-        margin-top: 0.05rem !important;
-        margin-bottom: 0.08rem !important;
+        margin-top: 0.02rem !important;
+        margin-bottom: 0.05rem !important;
+    }
+    .stCaption {
+        margin-top: 0px !important;
+        margin-bottom: 0px !important;
+        padding-top: 0px !important;
+        padding-bottom: 2px !important;
+        font-size: 11px !important;
     }
     
-    /* 📱 모바일 가로 한 줄 배치 강제 스크립트 */
+    /* 2. 모바일 가로 한 줄 강제 묶기 구조 */
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         gap: 2px !important;
-        margin-bottom: 0.05rem !important;
-        margin-top: 0.05rem !important;
+        margin-bottom: 0.02rem !important;
+        margin-top: 0px !important;
     }
     div[data-testid="column"] {
         flex: 1 1 0% !important;
@@ -40,49 +48,51 @@ st.markdown("""
         padding-right: 1px !important;
     }
     div[data-testid="column"] button {
-        padding: 3px 1px !important;
-        font-size: 10px !important;
+        padding: 4px 1px !important;
+        font-size: 9.5px !important;
         width: 100% !important;
     }
     div[data-testid="stRadio"] > label {
         display: none;
     }
-    .stCaption {
-        margin-top: 1px !important;
-        margin-bottom: 1px !important;
-        font-size: 11px !important;
-    }
 
-    /* 🎨 [완벽 반영] 순서 구조 기반 버튼 색상 강제 오버라이드 */
-    /* 2번째 가로 블록(순수익 행)의 3번째 열 (10,000원) -> 파란색 */
-    div[data-testid="stHorizontalBlock"]:nth-of-type(2) div[data-testid="column"]:nth-child(3) button {
-        background-color: #1d4ed8 !important;
+    /* 3. 🎨 [완벽 픽스] 목표 설정 버튼군 타겟 컬러링 고정 */
+    /* 순수익 행(7열) 중 3번째 버튼 [10,000원] -> 선명한 소프트 블루 */
+    div[data-testid="stHorizontalBlock"]:has(div[data-testid="column"]:nth-child(7)) div[data-testid="column"]:nth-child(3) button {
+        background-color: #2563eb !important;
         color: white !important;
         font-weight: bold !important;
         border: none !important;
     }
-    /* 3번째 가로 블록(마진율 행)의 3번째 열 (30%) -> 초록색 */
-    div[data-testid="stHorizontalBlock"]:nth-of-type(3) div[data-testid="column"]:nth-child(3) button {
-        background-color: #15803d !important;
+    /* 마진율 행(10열) 중 3번째 버튼 [30%] -> 선명한 소프트 그린 */
+    div[data-testid="stHorizontalBlock"]:has(div[data-testid="column"]:nth-child(10)) div[data-testid="column"]:nth-child(3) button {
+        background-color: #16a34a !important;
         color: white !important;
         font-weight: bold !important;
         border: none !important;
     }
-    /* 3번째 가로 블록(마진율 행)의 5번째 열 (50%) -> 빨간색 */
-    div[data-testid="stHorizontalBlock"]:nth-of-type(3) div[data-testid="column"]:nth-child(5) button {
-        background-color: #b91c1c !important;
+    /* 마진율 행(10열) 중 5번째 버튼 [50%] -> 선명한 소프트 레드 */
+    div[data-testid="stHorizontalBlock"]:has(div[data-testid="column"]:nth-child(10)) div[data-testid="column"]:nth-child(5) button {
+        background-color: #dc2626 !important;
         color: white !important;
         font-weight: bold !important;
         border: none !important;
     }
     
-    /* 📦 [강조] 매입가격 입력창 배경색을 진하게 하고 눈에 띄게 변경 */
-    div[data-testid="stTextInput"]:nth-of-type(1) input {
-        background-color: #1e293b !important;
-        color: #f8fafc !important;
-        border: 2px solid #14b8a6 !important;
+    /* 4. 📦 [초정밀 적용] 핵심 4대 지표 입력창에만 은은한 하이라이트 스타일 주입 (덜 진하고 세련된 톤) */
+    div:has(.core-marker) + div[data-testid="stTextInput"] input,
+    div:has(.core-marker) + div[data-testid="stNumberInput"] input {
+        background-color: #f8fafc !important;
+        color: #0f172a !important;
+        border: 2px solid #0ea5e9 !important;
         font-weight: bold !important;
-        font-size: 15px !important;
+        font-size: 14.5px !important;
+        box-shadow: 0 1px 3px rgba(14, 165, 233, 0.1) !important;
+    }
+    
+    /* 히든 마커 숨김 처리 */
+    .core-marker {
+        display: none;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -141,8 +151,7 @@ st.title("📊 마진율 계산기")
 # 최상단 결과 레이아웃 공간 확보
 top_container = st.container()
 
-# 2. 운영 형태 선택 탭
-st.markdown("---")
+# 2. 운영 형태 선택 탭 한 줄 결합
 col_mode1, col_mode2 = st.columns([1, 1.3])
 with col_mode1:
     st.markdown("##### 📋 운영 형태 선택")
@@ -162,7 +171,7 @@ if mode != st.session_state.prev_mode:
     st.session_state.prev_mode = mode
     st.rerun()
 
-# 3. 배송비 및 기타 원가 설정부
+# 3. 배송비 및 기타 원가 설정부 (이 영역의 입력창들은 순수한 순정 색상으로 유지됨)
 st.subheader("💰 배송비 및 기타 지출 설정")
 st.text_input("고객배송비 (원)", key="ui_customer_shipping", on_change=format_generic, args=("ui_customer_shipping",))
 st.text_input("매입운송비 (원)", key="ui_buy_shipping", on_change=format_generic, args=("ui_buy_shipping",))
@@ -211,19 +220,20 @@ with top_container:
     with col_head1: st.markdown("### 🏆 실시간 결과")
     with col_head2: st.selectbox("쇼핑몰 선택", list(platform_db.keys()), key="selected_platform", label_visibility="collapsed")
     
-    # [위치 조정 완료] 매입가격이 결과창 바로 밑, 버튼 세트 바로 위로 전진 배치 및 딥네이비 커스텀 스타일링 반영
+    # [100% 타겟 정밀 하이라이트 주입] 매입가격 마커 연결
+    st.markdown('<div class="core-marker"></div>', unsafe_allow_html=True)
     st.text_input("📦 매입가격 [제품 원가] (원)", key="ui_buy_price", on_change=format_generic, args=("ui_buy_price",))
 
-    # [한 줄 통합 완료] 순수익 원터치 설정 버튼 7개 가로 올인원 배열
+    # [포맷 변경 완료] 순수익 원터치 설정 버튼 7개 정수 콤마화 및 한 줄 정렬
     st.caption("💵 목표 순수익 원터치 설정")
     p_row = st.columns(7)
-    profits_layout = [("5천", "5,000"), ("8천", "8,000"), ("1만", "10,000"), ("1.5만", "15,000"), ("2만", "20,000"), ("2.5만", "25,000"), ("3만", "30,000")]
+    profits_layout = [("5,000", "5,000"), ("8,000", "8,000"), ("10,000", "10,000"), ("15,000", "15,000"), ("20,000", "20,000"), ("25,000", "25,000"), ("30,000", "30,000")]
     for idx, (lbl, val) in enumerate(profits_layout):
         if p_row[idx].button(lbl):
             st.session_state["ui_net_profit"] = val
             st.session_state.last_trigger = 'profit'; st.rerun()
 
-    # [간격 정밀 수정 완료] 마진율 10개 버튼 가로 초압축 배치 및 타겟 컬러 바인딩
+    # [한 줄 초압축 완료] 마진율 10개 버튼 가로 올인원 배열
     st.caption("📈 목표 마진율 원터치 설정")
     m_row = st.columns(10)
     for pct in range(10, 110, 10):
@@ -261,11 +271,19 @@ with top_container:
         st.session_state["ui_sell_price"] = f"{sell_price:,}"
         st.session_state["ui_net_profit"] = f"{net_profit:,}"
 
-    # 판매가격, 최종순수익, 마진율 입력창 간격 조밀화 완료
+    # [100% 타겟 정밀 하이라이트 주입] 판매가격, 최종순수익, 마진율 마커 연결 및 틈새 조밀화
     col1, col2, col3 = st.columns(3)
-    with col1: st.text_input("💰 판매가격 (원)", key="ui_sell_price", on_change=handle_price_change)
-    with col2: st.text_input("💸 최종 순수익 (원)", key="ui_net_profit", on_change=handle_profit_change)
-    with col3: st.number_input("📈 마진율 (ROI %)", key="ui_margin_rate", step=1.0, on_change=handle_margin_change)
+    with col1:
+        st.markdown('<div class="core-marker"></div>', unsafe_allow_html=True)
+        st.text_input("💰 판매가격 (원)", key="ui_sell_price", on_change=handle_price_change)
+    with col2:
+        st.markdown('<div class="core-marker"></div>', unsafe_allow_html=True)
+        st.text_input("💸 최종 순수익 (원)", key="ui_net_profit", on_change=handle_profit_change)
+    with col3:
+        st.markdown('<div class="core-marker"></div>', unsafe_allow_html=True)
+        st.number_input("📈 마진율 (ROI %)", key="ui_margin_rate", step=1.0, on_change=handle_margin_change)
+
+    st.markdown("---")
 
 # 6. 하단 접이식 세부 정산서 노출
 with st.expander("🔍 상세 정산 데이터 확인"):
