@@ -34,7 +34,7 @@ st.markdown("""
         font-size: 11px !important;
     }
     
-    /* 2. 모바일 가로 한 줄 강제 정렬 리액티브 구조 */
+    /* 2. 모바일 가로 한 줄 강제 정렬 */
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
@@ -51,74 +51,80 @@ st.markdown("""
     }
     div[data-testid="column"] button {
         padding: 4px 1px !important;
-        font-size: 9.5px !important;
+        font-size: 8.5px !important;
         width: 100% !important;
+        letter-spacing: -0.5px !important;
     }
     div[data-testid="stRadio"] > label {
         display: none;
     }
 
-    /* 3. 🎨 목표 설정 원터치 버튼군 파스텔톤 컬러 */
-    /* 순수익 행(7열) 중 3번째 버튼 [10,000원] -> 파스텔 블루 */
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="column"]:nth-child(7)) div[data-testid="column"]:nth-child(3) button {
-        background-color: #bfdbfe !important;
-        color: #1e3a8a !important;
-        font-weight: 800 !important;
+    /* 마커 숨김 */
+    .btn-profit-blue,
+    .btn-roi-green,
+    .btn-roi-red,
+    .core-input-marker {
+        display: none !important;
+        height: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
+    }
+
+    /* 3. 목표 설정 버튼 파스텔톤 */
+    div[data-testid="column"]:has(.btn-profit-blue) button {
+        background-color: #dbeafe !important;
+        color: #1e40af !important;
+        font-weight: 900 !important;
         border: 1px solid #93c5fd !important;
         box-shadow: 0 1px 2px rgba(30, 64, 175, 0.12) !important;
     }
 
-    /* 마진율 행(10열) 중 3번째 버튼 [30%] -> 파스텔 그린 */
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="column"]:nth-child(10)) div[data-testid="column"]:nth-child(3) button {
-        background-color: #bbf7d0 !important;
+    div[data-testid="column"]:has(.btn-roi-green) button {
+        background-color: #dcfce7 !important;
         color: #166534 !important;
-        font-weight: 800 !important;
+        font-weight: 900 !important;
         border: 1px solid #86efac !important;
         box-shadow: 0 1px 2px rgba(22, 101, 52, 0.12) !important;
     }
 
-    /* 마진율 행(10열) 중 5번째 버튼 [50%] -> 파스텔 레드 */
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="column"]:nth-child(10)) div[data-testid="column"]:nth-child(5) button {
-        background-color: #fecaca !important;
+    div[data-testid="column"]:has(.btn-roi-red) button {
+        background-color: #fee2e2 !important;
         color: #991b1b !important;
-        font-weight: 800 !important;
+        font-weight: 900 !important;
         border: 1px solid #fca5a5 !important;
         box-shadow: 0 1px 2px rgba(153, 27, 27, 0.12) !important;
     }
 
-    /* 버튼 hover 시 살짝만 선명하게 */
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="column"]:nth-child(7)) div[data-testid="column"]:nth-child(3) button:hover {
-        background-color: #93c5fd !important;
+    div[data-testid="column"]:has(.btn-profit-blue) button:hover {
+        background-color: #bfdbfe !important;
     }
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="column"]:nth-child(10)) div[data-testid="column"]:nth-child(3) button:hover {
-        background-color: #86efac !important;
+
+    div[data-testid="column"]:has(.btn-roi-green) button:hover {
+        background-color: #bbf7d0 !important;
     }
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="column"]:nth-child(10)) div[data-testid="column"]:nth-child(5) button:hover {
-        background-color: #fca5a5 !important;
+
+    div[data-testid="column"]:has(.btn-roi-red) button:hover {
+        background-color: #fecaca !important;
     }
     
-    /* 4. 💎 핵심 4대 지표 입력창: 살짝 진한 회색 박스 + 눈에 띄는 진한 글씨 */
-    div:has(.core-marker) + div[data-testid="stTextInput"] input,
-    div:has(.core-marker) + div[data-testid="stNumberInput"] input {
-        background-color: #e2e8f0 !important;
-        color: #1e3a8a !important;
+    /* 4. 핵심 입력창: 살짝 진한 회색 박스 + 눈에 띄는 굵은 글씨 */
+    div[data-testid="column"]:has(.core-input-marker) input {
+        background-color: #d1d5db !important;
+        color: #1d4ed8 !important;
+        -webkit-text-fill-color: #1d4ed8 !important;
         border: 1.5px solid #94a3b8 !important;
         font-weight: 900 !important;
         font-size: 16px !important;
         letter-spacing: -0.2px !important;
-        box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+        box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.10), 0 1px 2px rgba(15, 23, 42, 0.06) !important;
     }
 
-    div:has(.core-marker) + div[data-testid="stTextInput"] input:focus,
-    div:has(.core-marker) + div[data-testid="stNumberInput"] input:focus {
-        background-color: #dbe4ee !important;
+    div[data-testid="column"]:has(.core-input-marker) input:focus {
+        background-color: #cbd5e1 !important;
         color: #172554 !important;
-        border: 2px solid #3b82f6 !important;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
-    }
-    
-    .core-marker {
-        display: none;
+        -webkit-text-fill-color: #172554 !important;
+        border: 2px solid #2563eb !important;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18) !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -133,7 +139,7 @@ platform_db = {
     "기타 마켓": {"cat": 11.0, "link": 2.0, "ship": 3.3}
 }
 
-# 플랫폼 수수료 동기화 콜백 시스템
+# 플랫폼 수수료 동기화 콜백
 def sync_platform_fees():
     d = platform_db[st.session_state.selected_platform]
     st.session_state.cat_rate = d["cat"]
@@ -141,7 +147,7 @@ def sync_platform_fees():
     st.session_state.ship_rate = d["ship"]
     st.session_state.last_trigger = 'price'
 
-# 시스템 핵심 세션 상태 초기화 파트
+# 시스템 핵심 세션 상태 초기화
 if 'selected_platform' not in st.session_state:
     st.session_state.selected_platform = "스마트스토어"
 if 'cat_rate' not in st.session_state:
@@ -175,9 +181,9 @@ if 'ui_ad_cost' not in st.session_state:
 if 'prev_mode' not in st.session_state:
     st.session_state.prev_mode = "📦 사입 구조"
 
-# 입력값 파싱용 콜백 엔진
+# 입력값 파싱
 def parse_money(value):
-    cleaned = re.sub(r"[^0-9\-]", "", str(value))
+    cleaned = re.sub(r"[^0-9\\-]", "", str(value))
     try:
         return int(cleaned)
     except:
@@ -205,7 +211,6 @@ st.title("📊 마진율 계산기")
 # 최상단 결과 레이아웃 공간 확보
 top_container = st.container()
 
-# 상단 결과바 내부 쇼핑몰 선택창 렌더링
 with top_container:
     col_head1, col_head2 = st.columns([1.3, 1])
     with col_head1:
@@ -276,7 +281,7 @@ ad_cost = parse_money(st.session_state.get("ui_ad_cost", "0"))
 
 total_cost = buy_price + buy_shipping + other_cost + seller_shipping + ad_cost
 
-# 정방향 마진 계산 공통 함수
+# 정방향 마진 계산 함수
 def calc_forward_metrics(sell_price):
     total_sales = sell_price + customer_shipping
     platform_fee = (
@@ -291,7 +296,7 @@ def calc_forward_metrics(sell_price):
     margin_rate = (net_profit / total_cost * 100) if total_cost > 0 else 0.0
     return net_profit, margin_rate, settlement_amount, est_vat
 
-# 순수익 타겟 기반 판매가 무조건 올림 역산식
+# 순수익 타겟 기반 판매가 역산식
 def price_from_profit(target_profit):
     pre_vat = target_profit * (1 + vat_rate / 100) if target_profit > 0 else target_profit
     target_settlement = pre_vat + total_cost
@@ -303,37 +308,50 @@ def price_from_profit(target_profit):
         return max(0, price)
     return 0
 
-# 5. 최상단 엔진 렌더링 구역 구동
+# 5. 최상단 엔진 렌더링 구역
 with top_container:
-    st.markdown('<div class="core-marker"></div>', unsafe_allow_html=True)
-    st.text_input("📦 매입가격 [제품 원가] (원)", key="ui_buy_price", on_change=format_generic, args=("ui_buy_price",))
+    # 매입가격 입력창
+    buy_col = st.columns(1)[0]
+    with buy_col:
+        st.markdown('<span class="core-input-marker"></span>', unsafe_allow_html=True)
+        st.text_input("📦 매입가격 [제품 원가] (원)", key="ui_buy_price", on_change=format_generic, args=("ui_buy_price",))
 
-    # 목표 순수익 원터치 설정
+    # 목표 순수익 원터치 설정: 1,000원 ~ 30,000원, 1,000원 단위, 3줄
     st.caption("💵 목표 순수익 원터치 설정")
-    p_row = st.columns(7)
-    profits_layout = [
-        ("5,000", "5,000"),
-        ("8,000", "8,000"),
-        ("10,000", "10,000"),
-        ("15,000", "15,000"),
-        ("20,000", "20,000"),
-        ("25,000", "25,000"),
-        ("30,000", "30,000")
-    ]
-    for idx, (lbl, val) in enumerate(profits_layout):
-        if p_row[idx].button(lbl):
-            st.session_state["ui_net_profit"] = val
-            st.session_state.last_trigger = 'profit'
-            st.rerun()
 
+    profit_rows = [
+        list(range(1000, 10001, 1000)),
+        list(range(11000, 20001, 1000)),
+        list(range(21000, 30001, 1000))
+    ]
+
+    for row in profit_rows:
+        p_cols = st.columns(10)
+        for idx, profit_value in enumerate(row):
+            with p_cols[idx]:
+                if profit_value == 10000:
+                    st.markdown('<span class="btn-profit-blue"></span>', unsafe_allow_html=True)
+
+                if st.button(f"{profit_value:,}", key=f"profit_{profit_value}"):
+                    st.session_state["ui_net_profit"] = f"{profit_value:,}"
+                    st.session_state.last_trigger = 'profit'
+                    st.rerun()
+
+    # 목표 ROI 설정
     st.caption("📈 목표 ROI(원가대비 수익률) 설정")
     m_row = st.columns(10)
     for pct in range(10, 110, 10):
         idx = (pct // 10) - 1
-        if m_row[idx].button(f"{pct}%"):
-            st.session_state["ui_margin_rate"] = float(pct)
-            st.session_state.last_trigger = 'margin'
-            st.rerun()
+        with m_row[idx]:
+            if pct == 30:
+                st.markdown('<span class="btn-roi-green"></span>', unsafe_allow_html=True)
+            elif pct == 50:
+                st.markdown('<span class="btn-roi-red"></span>', unsafe_allow_html=True)
+
+            if st.button(f"{pct}%", key=f"margin_{pct}"):
+                st.session_state["ui_margin_rate"] = float(pct)
+                st.session_state.last_trigger = 'margin'
+                st.rerun()
 
     if total_cost <= 0 and st.session_state.last_trigger == 'margin':
         st.warning("⚠️ 매입가격 또는 원가를 먼저 입력해야 목표 ROI 계산이 가능합니다!")
@@ -367,18 +385,18 @@ with top_container:
     # 결과 메인 하이라이트 입력창 3열 렌더링
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown('<div class="core-marker"></div>', unsafe_allow_html=True)
+        st.markdown('<span class="core-input-marker"></span>', unsafe_allow_html=True)
         st.text_input("💰 판매가격 (원)", key="ui_sell_price", on_change=handle_price_change)
     with col2:
-        st.markdown('<div class="core-marker"></div>', unsafe_allow_html=True)
+        st.markdown('<span class="core-input-marker"></span>', unsafe_allow_html=True)
         st.text_input("💸 최종 순수익 (원)", key="ui_net_profit", on_change=handle_profit_change)
     with col3:
-        st.markdown('<div class="core-marker"></div>', unsafe_allow_html=True)
+        st.markdown('<span class="core-input-marker"></span>', unsafe_allow_html=True)
         st.number_input("📈 마진율 (ROI %)", key="ui_margin_rate", step=1.0, on_change=handle_margin_change)
 
     st.markdown("---")
 
-# 6. 하단 접이식 세부 정산서 노출
+# 6. 하단 접이식 세부 정산서
 with st.expander("🔍 상세 정산 데이터 확인"):
     current_sell_price = parse_money(st.session_state.ui_sell_price)
     actual_profit, actual_roi, actual_settlement, actual_vat = calc_forward_metrics(current_sell_price)
