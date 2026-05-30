@@ -40,7 +40,7 @@ if 'ui_seller_shipping' not in st.session_state: st.session_state.ui_seller_ship
 if 'ui_ad_cost' not in st.session_state: st.session_state.ui_ad_cost = "0"
 if 'prev_mode' not in st.session_state: st.session_state.prev_mode = "📦 사입 구조"
 
-# [콜백 함수들] 입력값 변경 시 세자리 콤마 포맷팅 강제 적용
+# 입력값 변경 시 세자리 콤마 포맷팅 강제 적용 콜백
 def handle_price_change():
     raw = st.session_state.ui_sell_price.replace(",", "")
     try: val = int(raw)
@@ -66,10 +66,42 @@ def format_generic(key):
 
 st.title("📊 마진율 계산기")
 
-# 최상단 결과 레이아웃 공간 확보
+# 최상단 결과 레이아웃 공간 확보 (고정)
 top_container = st.container()
 
-# 2. 마켓 기본 데이터 설정
+# 2. 사입 / 위탁 형태 선택 (위로 이동)
+st.subheader("📋 운영 형태 선택 (탭)")
+mode = st.radio("운영 형태 선택", ["📦 사입 구조", "🚚 위탁 구조"], horizontal=True, label_visibility="collapsed")
+
+if mode != st.session_state.prev_mode:
+    if mode == "📦 사입 구조":
+        st.session_state.ui_buy_shipping = "3,000"
+        st.session_state.ui_other_cost = "500"
+        st.session_state.last_trigger = 'price'
+    else:
+        st.session_state.ui_buy_shipping = "0"
+        st.session_state.ui_other_cost = "0"
+        st.session_state.ui_margin_rate = 30.0
+        st.session_state.last_trigger = 'margin'
+    st.session_state.prev_mode = mode
+    st.rerun()
+
+# 3. 금액 원가 입력 섹션 (위로 이동 및 자동 콤마)
+col_in1, col_in2 = st.columns(2)
+with col_in1:
+    st.subheader("💰 배송비 설정")
+    st.text_input("고객배송비 (원)", key="ui_customer_shipping", on_change=format_generic, args=("ui_customer_shipping",))
+with col_in2:
+    st.subheader("📦 원가 설정")
+    st.text_input("매입가격 (원)", key="ui_buy_price", on_change=format_generic, args=("ui_buy_price",))
+
+st.text_input("매입운송비 (원)", key="ui_buy_shipping", on_change=format_generic, args=("ui_buy_shipping",))
+st.text_input("기타(포장, 사은품) (원)", key="ui_other_cost", on_change=format_generic, args=("ui_other_cost",))
+st.text_input("판매자 택배비 (원)", key="ui_seller_shipping", on_change=format_generic, args=("ui_seller_shipping",))
+st.text_input("광고비 (원)", key="ui_ad_cost", on_change=format_generic, args=("ui_ad_cost",))
+
+# 4. 수수료 및 마켓 설정 (요청대로 맨 아래로 이동)
+st.markdown("---")
 st.subheader("🛒 수수료 및 마켓 설정")
 platform_db = {
     "스마트스토어": {"cat": 3.63, "link": 3.0, "ship": 3.63},
@@ -89,37 +121,7 @@ with col_fee3: ship_rate = st.number_input("배송비 (%)", value=defaults["ship
 
 vat_rate = st.number_input("부가세율 (%)", value=10, step=1)
 
-# 3. 사입 / 위탁 탭 설정
-st.markdown("---")
-mode = st.radio("📋 운영 형태 선택 (탭)", ["📦 사입 구조", "🚚 위탁 구조"], horizontal=True)
-
-if mode != st.session_state.prev_mode:
-    if mode == "📦 사입 구조":
-        st.session_state.ui_buy_shipping = "3,000"
-        st.session_state.ui_other_cost = "500"
-        st.session_state.last_trigger = 'price'
-    else:
-        st.session_state.ui_buy_shipping = "0"
-        st.session_state.ui_other_cost = "0"
-        st.session_state.ui_margin_rate = 30.0
-        st.session_state.last_trigger = 'margin'
-    st.session_state.prev_mode = mode
-    st.rerun()
-
-# 4. 금액 입력부 렌더링
-col_in1, col_in2 = st.columns(2)
-with col_in1:
-    st.subheader("💰 배송비 설정")
-    st.text_input("고객배송비 (원)", key="ui_customer_shipping", on_change=format_generic, args=("ui_customer_shipping",))
-with col_in2:
-    st.subheader("📦 원가 설정")
-    st.text_input("매입가격 (원)", key="ui_buy_price", on_change=format_generic, args=("ui_buy_price",))
-
-st.text_input("매입운송비 (원)", key="ui_buy_shipping", on_change=format_generic, args=("ui_buy_shipping",))
-st.text_input("기타(포장, 사은품) (원)", key="ui_other_cost", on_change=format_generic, args=("ui_other_cost",))
-st.text_input("판매자 택배비 (원)", key="ui_seller_shipping", on_change=format_generic, args=("ui_seller_shipping",))
-st.text_input("광고비 (원)", key="ui_ad_cost", on_change=format_generic, args=("ui_ad_cost",))
-
+# 데이터 안전 파싱
 def get_val(key):
     try: return int(st.session_state[key].replace(",", ""))
     except: return 0
@@ -142,11 +144,11 @@ def price_from_profit(target_profit):
         return max(0, price)
     return 0
 
-# 5. 최상단 예약 구역에 결과 레이아웃 및 간편 버튼 주입
+# 5. 최상단 예약 구역 연산 및 렌더링 엔진 (코드는 아래에 있지만 상단 배치됨)
 with top_container:
     st.markdown("### 🏆 실시간 결과 및 목표 조정")
     
-    # 순수익 간편 설정 버튼 (2행)
+    # 순수익 간편 버튼
     btn_r1_c1, btn_r1_c2 = st.columns(2)
     with btn_r1_c1:
         if st.button("🎁 순수익 5,000원"):
@@ -171,7 +173,7 @@ with top_container:
             st.session_state.last_trigger = 'profit'
             st.rerun()
 
-    # 마진율 간편 설정 버튼 추가 (요청사항 반영)
+    # 마진율 간편 버튼
     btn_r3_c1, btn_r3_c2 = st.columns(2)
     with btn_r3_c1:
         if st.button("📈 마진율 30% 맞추기"):
@@ -184,7 +186,7 @@ with top_container:
             st.session_state.last_trigger = 'margin'
             st.rerun()
 
-    # 입력 소스 역산 분기 실행
+    # 역산 엔진 구동
     if st.session_state.last_trigger == 'price':
         sell_price = get_val("ui_sell_price")
         total_sales = sell_price + customer_shipping
@@ -214,15 +216,14 @@ with top_container:
         st.session_state["ui_sell_price"] = f"{sell_price:,}"
         st.session_state["ui_net_profit"] = f"{net_profit:,}"
 
-    # 상단 3열 인풋 필드 렌더링
+    # 상단 결과 메인 인풋 필드 3열 배치
     col1, col2, col3 = st.columns(3)
     with col1: st.text_input("💰 판매가격 (원)", key="ui_sell_price", on_change=handle_price_change)
     with col2: st.text_input("💸 최종 순수익 (원)", key="ui_net_profit", on_change=handle_profit_change)
     with col3: st.number_input("📈 마진율 (ROI %)", key="ui_margin_rate", step=1.0, on_change=handle_margin_change)
 
-    st.markdown("---")
-
-# 6. 하단 접이식 상세 데이터 확인
+# 6. 하단 접이식 세부 내역 데이터
+st.markdown("---")
 with st.expander("🔍 상세 정산 데이터 확인"):
     sell_price = get_val("ui_sell_price")
     current_fee = (sell_price * (cat_rate + link_rate) / 100) + (customer_shipping * (ship_rate / 100))
